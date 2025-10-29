@@ -12,7 +12,7 @@ interface MotionMainProps extends MotionProps {
 }
 
 const DefaultMotionMain: React.FC<MotionMainProps> = ({ children }) => (
-  <main className="container mx-auto px-6 py-16 sm:py-24">{children}</main>
+  <main className="container mx-auto px-6 py-8 sm:py-12">{children}</main>
 );
 DefaultMotionMain.displayName = 'DefaultMotionMain';
 
@@ -26,7 +26,7 @@ export default function PageWrapper({ children }: PageWrapperProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="container mx-auto px-6 py-16 sm:py-24"
+          className="container mx-auto px-6 py-8 sm:py-12"
         >
           {children}
         </motion.main>

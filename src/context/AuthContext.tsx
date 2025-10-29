@@ -1,9 +1,14 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface User {
+export interface User {
   id: number;
   username: string;
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  email?: string;
+  tel?: string;
   profilePicture?: string;
 }
 
@@ -28,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!storedUser) {
         storedUser = sessionStorage.getItem('user');
-        storageType = 'sessionStorage';
+        
       }
 
       if (storedUser) {

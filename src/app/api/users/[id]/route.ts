@@ -3,14 +3,10 @@ import { readDb, writeDb, Db, User } from '../../../../lib/db';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    console.log("API GET /api/users/[id] - params:", params);
-    console.log("API GET /api/users/[id] - params.id:", params.id);
-    const userId = parseInt(params.id, 10);
+    const resolvedParams = await params; // Await the params object
+    const userId = parseInt(resolvedParams.id, 10);
     const db: Db = await readDb();
-    console.log("API GET /api/users/[id] - userId from params:", userId, typeof userId);
-    console.log("API GET /api/users/[id] - db.users:", db.users);
     const user = db.users.find((u: User) => {
-      console.log("Comparing user.id:", u.id, typeof u.id, "with userId:", userId, typeof userId);
       return u.id === userId;
     });
 
@@ -30,7 +26,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const userId = parseInt(params.id, 10);
+    const resolvedParams = await params; // Await the params object
+    const userId = parseInt(resolvedParams.id, 10);
     const updatedData = await request.json();
 
     const db: Db = await readDb();
