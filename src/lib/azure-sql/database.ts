@@ -6,10 +6,18 @@ import sql from 'mssql';
 import { User, Document } from '../../lib/db'; // Import existing interfaces
 
 export class AzureSqlDatabaseContext {
+  private static instance: AzureSqlDatabaseContext;
   private pool: sql.ConnectionPool | undefined;
 
-  constructor() {
+  private constructor() { // Make constructor private
     console.log("Azure SQL Database Context initialized with config:", sqlConfig);
+  }
+
+  public static getInstance(): AzureSqlDatabaseContext {
+    if (!AzureSqlDatabaseContext.instance) {
+      AzureSqlDatabaseContext.instance = new AzureSqlDatabaseContext();
+    }
+    return AzureSqlDatabaseContext.instance;
   }
 
   private async initializePool() {
@@ -53,7 +61,7 @@ export class AzureSqlDatabaseContext {
           birthDate DATE,
           email NVARCHAR(255) UNIQUE,
           tel NVARCHAR(50),
-          createdAt DATETIME DEFAULT GETDATE()
+          createdAt DATETIME2(0) DEFAULT GETDATE()
         );
       `;
       await request.query(createUsersTableSql);
@@ -65,8 +73,8 @@ export class AzureSqlDatabaseContext {
           id INT IDENTITY(1,1) PRIMARY KEY,
           title NVARCHAR(255) NOT NULL,
           content NVARCHAR(MAX),
-          createdAt DATETIME DEFAULT GETDATE(),
-          updatedAt DATETIME DEFAULT GETDATE()
+          createdAt DATETIME2(0) DEFAULT GETDATE(),
+          updatedAt DATETIME2(0) DEFAULT GETDATE()
         );
       `;
       await request.query(createDocumentsTableSql);
@@ -200,5 +208,11 @@ export class AzureSqlDatabaseContext {
       return (await this.pool!.request().input('id', sql.Int, id).query('SELECT id, title, content, createdAt, updatedAt FROM Documents WHERE id = @id')).recordset[0] as Document;
     }
     return undefined;
+  }
+
+  public async executeQuery(query: string): Promise<sql.IResult<unknown>> {
+    await this.initializePool();
+    const request = this.pool!.request();
+    return await request.query(query);
   }
 }

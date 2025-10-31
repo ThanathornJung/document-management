@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
-import { Document } from '@/lib/db'; // Keep Document interface for type consistency
 
-const dbContext = new AzureSqlDatabaseContext();
+const dbContext = AzureSqlDatabaseContext.getInstance();
 
 export async function GET() {
   try {

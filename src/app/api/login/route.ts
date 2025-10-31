@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
-import { User } from '../../../lib/db'; // Keep User interface for type consistency
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use environment variable in production
-const dbContext = new AzureSqlDatabaseContext();
+const dbContext = AzureSqlDatabaseContext.getInstance();
 
 export async function POST(request: Request) {
   try {

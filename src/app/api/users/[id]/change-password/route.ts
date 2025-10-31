@@ -1,12 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'; // Import NextRequest
+import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 
-const dbContext = new AzureSqlDatabaseContext();
+const dbContext = AzureSqlDatabaseContext.getInstance();
 
-export async function PUT(request: NextRequest, context: { params: { id: string } }) { // Updated signature
+export async function PUT(request: NextRequest) {
   try {
-    const userId = parseInt(context.params.id, 10); // Access from context.params
+    const pathname = request.nextUrl.pathname;
+    const id = pathname.split('/')[3]; // /api/users/[id]/change-password
+    const userId = parseInt(id, 10);
     const { currentPassword, newPassword } = await request.json();
 
     const user = await dbContext.getUserById(userId);
