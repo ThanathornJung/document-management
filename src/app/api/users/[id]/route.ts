@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { User } from '../../../../lib/db'; // Keep User interface for type consistency
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 
 const dbContext = new AzureSqlDatabaseContext();
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
-    const userId = parseInt(params.id, 10);
+    const userId = parseInt(context.params.id, 10);
     const user = await dbContext.getUserById(userId);
 
     if (!user) {
@@ -24,9 +24,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: { id: string } }) {
   try {
-    const userId = parseInt(params.id, 10);
+    const userId = parseInt(context.params.id, 10);
     const updatedData = await request.json();
 
     // Prevent changing sensitive fields like password or id through this route
