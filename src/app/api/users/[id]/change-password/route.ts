@@ -1,31 +1,33 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
-import { readDb, writeDb, Db, User } from '../../../../lib/db';
+import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
+
+const dbContext = new AzureSqlDatabaseContext();
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const userId = parseInt(params.id, 10);
     const { currentPassword, newPassword } = await request.json();
 
-    const db: Db = await readDb();
-    const userIndex = db.users.findIndex((u: User) => u.id === userId);
+    const user = await dbContext.getUserById(userId);
 
-    if (userIndex === -1) {
+    if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    const user = db.users[userIndex];
-
     // Verify current password
-    if (!await bcrypt.compare(currentPassword, user.password)) {
+    if (!user.password || !await bcrypt.compare(currentPassword, user.password)) {
       return NextResponse.json({ message: 'Incorrect current password' }, { status: 401 });
     }
 
     // Hash new password
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    db.users[userIndex].password = hashedNewPassword;
-    await writeDb(db);
+    const updated = await dbContext.updateUserPassword(userId, hashedNewPassword);
+
+    if (!updated) {
+      return NextResponse.json({ message: 'Failed to update password' }, { status: 500 });
+    }
 
     return NextResponse.json({ message: 'Password updated successfully' }, { status: 200 });
   } catch (error) {

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import sha1 from 'sha1';
-import { readDb, writeDb, Db, User } from '../../../lib/db';
+import { User } from '../../../lib/db'; // Keep User interface for type consistency
+import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
+
+const dbContext = new AzureSqlDatabaseContext();
 
 async function checkPwnedPassword(password: string): Promise<boolean> {
   const sha1Hash = sha1(password).toUpperCase();
@@ -27,17 +30,16 @@ async function checkPwnedPassword(password: string): Promise<boolean> {
 }
 
 export async function POST(request: Request) {
-
   try {
     const { firstName, lastName, birthDate, email, tel, username, password } = await request.json();
 
-    const db: Db = await readDb(); // Use helper to read
-
     // Check if username or email already exists
-    if (db.users.some((user: User) => user.username === username)) {
+    const existingUserByUsername = await dbContext.getUserByUsername(username);
+    if (existingUserByUsername) {
       return NextResponse.json({ message: 'Username already exists' }, { status: 409 });
     }
-    if (db.users.some((user: User) => user.email === email)) {
+    const existingUserByEmail = await dbContext.getUserByEmail(email);
+    if (existingUserByEmail) {
       return NextResponse.json({ message: 'Email already exists' }, { status: 409 });
     }
 
@@ -48,21 +50,15 @@ export async function POST(request: Request) {
 
     // Create new user
     const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
-    const newUser: User = {
-      id: db.users.length > 0 ? Math.max(...db.users.map((user: User) => user.id)) + 1 : 1,
+    const newUser = await dbContext.createUser({
       firstName,
       lastName,
       birthDate,
       email,
       tel,
       username,
-      password: hashedPassword, // Store the hashed password
-      createdAt: new Date().toISOString(),
-    };
-
-    db.users.push(newUser);
-
-    await writeDb(db); // Use helper to write
+      password: hashedPassword,
+    });
 
     return NextResponse.json({ message: 'User registered successfully', user: { id: newUser.id, username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, birthDate: newUser.birthDate, email: newUser.email, tel: newUser.tel } }, { status: 201 });
   } catch (error) {

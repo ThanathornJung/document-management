@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
-import { readDb, writeDb, Db, User } from '../../../../lib/db';
+import { User } from '../../../../lib/db'; // Keep User interface for type consistency
+import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
+
+const dbContext = new AzureSqlDatabaseContext();
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const resolvedParams = await params; // Await the params object
-    const userId = parseInt(resolvedParams.id, 10);
-    const db: Db = await readDb();
-    const user = db.users.find((u: User) => {
-      return u.id === userId;
-    });
+    const userId = parseInt(params.id, 10);
+    const user = await dbContext.getUserById(userId);
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -27,25 +26,21 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const resolvedParams = await params; // Await the params object
-    const userId = parseInt(resolvedParams.id, 10);
+    const userId = parseInt(params.id, 10);
     const updatedData = await request.json();
-
-    const db: Db = await readDb();
-    const userIndex = db.users.findIndex((u: User) => u.id === userId);
-
-    if (userIndex === -1) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
-    }
 
     // Prevent changing sensitive fields like password or id through this route
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _password, id: _id, ...updatableData } = updatedData;
 
-    db.users[userIndex] = { ...db.users[userIndex], ...updatableData };
-    await writeDb(db);
-    console.log("Backend PUT /api/users/[id] response:", db.users[userIndex]);
-    return NextResponse.json({ message: 'User updated successfully', user: db.users[userIndex] }, { status: 200 });
+    const updatedUser = await dbContext.updateUser(userId, updatableData);
+
+    if (!updatedUser) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    }
+
+    console.log("Backend PUT /api/users/[id] response:", updatedUser);
+    return NextResponse.json({ message: 'User updated successfully', user: updatedUser }, { status: 200 });
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });

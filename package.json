@@ -9,11 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@types/mssql": "^9.1.8",
     "bcrypt": "^6.0.0",
     "cookie": "^1.0.2",
-    
     "framer-motion": "^12.23.24",
     "jsonwebtoken": "^9.0.2",
+    "mssql": "^12.0.0",
     "next": "16.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
