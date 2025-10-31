@@ -61,7 +61,8 @@ export class AzureSqlDatabaseContext {
           birthDate DATE,
           email NVARCHAR(255) UNIQUE,
           tel NVARCHAR(50),
-          createdAt DATETIME2(0) DEFAULT GETDATE()
+          createdAt DATETIME2(0) DEFAULT GETDATE(),
+          updatedAt DATETIME2(0) DEFAULT GETDATE()
         );
       `;
       await request.query(createUsersTableSql);
@@ -139,7 +140,7 @@ export class AzureSqlDatabaseContext {
   async updateUser(id: number, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt'>>): Promise<User | undefined> {
     await this.initializePool();
     const request = this.pool!.request();
-    let query = 'UPDATE Users SET ';
+    let query = 'UPDATE Users SET updatedAt = GETDATE()'; // Always update updatedAt
     const updates: string[] = [];
 
     if (userData.firstName !== undefined) { updates.push('firstName = @firstName'); request.input('firstName', sql.NVarChar, userData.firstName); }
@@ -149,10 +150,11 @@ export class AzureSqlDatabaseContext {
     if (userData.tel !== undefined) { updates.push('tel = @tel'); request.input('tel', sql.NVarChar, userData.tel); }
 
     if (updates.length === 0) {
-      return this.getUserById(id); // No updates to perform
+      // If no other fields are updated, just update updatedAt
+      query += ' WHERE id = @id';
+    } else {
+      query += ', ' + updates.join(', ') + ' WHERE id = @id';
     }
-
-    query += updates.join(', ') + ' WHERE id = @id';
     request.input('id', sql.Int, id);
 
     const result = await request.query(query);

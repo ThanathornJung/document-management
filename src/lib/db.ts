@@ -16,4 +16,5 @@ export interface User {
   email?: string;
   tel?: string;
   createdAt?: string;
+  updatedAt?: string; // Added
 }
