@@ -18,15 +18,15 @@ export default function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <AuthProvider>
-      <Header />
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} /> {/* Render Sidebar */}
+      <Header toggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} /> {/* Pass user prop */}
       {isSidebarOpen && ( // Overlay when sidebar is open
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={toggleSidebar}
         ></div>
       )}
-      <main className="pt-16 flex-grow">{children}</main>
+      <main className="pt-20 flex-grow">{children}</main>
       <footer className="bg-gray-900 bg-opacity-75 py-8 mt-12">
         <div className="container mx-auto px-6 text-center text-white">
           <p className="font-press-start">&copy; 2024 Document Management. All rights reserved.</p>

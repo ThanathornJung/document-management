@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image'; // Import Image
 
 interface SidebarProps {
   isOpen: boolean;
@@ -10,7 +11,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth(); // Get user from AuthContext
   const router = useRouter();
 
   const handleLogout = () => {
@@ -33,8 +34,27 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </button>
       </div>
       <nav className="flex flex-col p-4 space-y-2">
-        {isLoggedIn ? (
+        {isLoggedIn && user ? (
           <>
+            {/* User Profile at the top */}
+            <div className="flex items-center space-x-2 mb-4 px-4 py-2 bg-gray-800 rounded">
+              {user.profilePicture ? (
+                <Image
+                  src={user.profilePicture}
+                  alt="Profile Picture"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full border-2 border-yellow-400"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center border-2 border-yellow-400">
+                  <svg className="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+              <span className="text-white font-press-start text-sm">{user.username}</span>
+            </div>
             <Link
               href="/"
               className="block px-4 py-2 text-white font-press-start hover:bg-gray-700 rounded"
@@ -43,18 +63,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               Home
             </Link>
             <Link
-              href="/documents"
-              className="block px-4 py-2 text-white font-press-start hover:bg-gray-700 rounded"
-              onClick={onClose}
-            >
-              Documents
-            </Link>
-            <Link
               href="/my-info"
               className="block px-4 py-2 text-white font-press-start hover:bg-gray-700 rounded"
               onClick={onClose}
             >
               My Info
+            </Link>
+            <Link
+              href="/documents"
+              className="block px-4 py-2 text-white font-press-start hover:bg-gray-700 rounded"
+              onClick={onClose}
+            >
+              Documents
             </Link>
             <button
               onClick={handleLogout}

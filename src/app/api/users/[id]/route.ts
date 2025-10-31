@@ -17,6 +17,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // Exclude sensitive information like password before sending to client
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _password, ...userWithoutPassword } = user;
+    console.log("Backend GET /api/users/[id] response:", userWithoutPassword);
     return NextResponse.json(userWithoutPassword, { status: 200 });
   } catch (error) {
     console.error('Error fetching user:', error);
@@ -43,7 +44,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     db.users[userIndex] = { ...db.users[userIndex], ...updatableData };
     await writeDb(db);
-
+    console.log("Backend PUT /api/users/[id] response:", db.users[userIndex]);
     return NextResponse.json({ message: 'User updated successfully', user: db.users[userIndex] }, { status: 200 });
   } catch (error) {
     console.error('Error updating user:', error);

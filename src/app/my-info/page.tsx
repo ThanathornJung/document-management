@@ -2,21 +2,21 @@
 import { useAuth, User } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import PageWrapper from '../../components/PageWrapper';
+import LoadingModal from '../../components/LoadingModal';
 
 export default function MyInfoPage() {
   const { user } = useAuth();
   const [userInfo, setUserInfo] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editableUserInfo, setEditableUserInfo] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // ถ้าไม่มี user ให้ return เลย
     if (!user?.id) {
       return;
     }
 
-    // ประกาศ flag เพื่อป้องกัน race condition
     let isMounted = true;
 
     const fetchUserInfo = async () => {
@@ -31,12 +31,14 @@ export default function MyInfoPage() {
           setUserInfo(data);
           setEditableUserInfo(data);
           setIsLoading(false);
+          setError(null);
         }
       } catch (error) {
         console.error("MyInfoPage - Error fetching user info:", error);
         if (isMounted) {
           setUserInfo(null);
           setIsLoading(false);
+          setError(error instanceof Error ? error.message : 'An unknown error occurred');
         }
       }
     };
@@ -55,7 +57,7 @@ export default function MyInfoPage() {
       setUserInfo(null);
       setIsLoading(false);
     } else if (user.id) {
-      setIsLoading(true);
+      // isLoading is already true initially, fetchUserInfo will set it to false
     }
   }, [user]);
 
@@ -77,8 +79,9 @@ export default function MyInfoPage() {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      const updatedUser = await res.json();
-      setUserInfo(updatedUser);
+      const responseData = await res.json();
+      setUserInfo(responseData.user);
+      setEditableUserInfo(responseData.user);
       setIsEditing(false);
     } catch (error) {
       console.error("MyInfoPage - Error saving user info:", error);
@@ -97,28 +100,39 @@ export default function MyInfoPage() {
           <p className="font-bold">Login Required</p>
           <p>Please log in to view your information.</p>
         </div>
-      ) : isLoading ? (
-        <div className="bg-blue-900 border-l-4 border-blue-400 text-blue-200 p-4 font-press-start" role="alert">
-          <p className="font-bold">Loading</p>
-          <p>Loading user information...</p>
+      ) : error ? (
+        <div className="bg-red-900 border-l-4 border-red-400 text-red-200 p-4 font-press-start" role="alert">
+          <p className="font-bold">Error</p>
+          <p>{error}</p>
         </div>
       ) : userInfo ? (
         <div className="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 border border-yellow-400 max-w-lg mx-auto">
           <div className="border-t border-gray-700 px-4 py-5 sm:p-0">
             <dl className="sm:divide-y sm:divide-gray-700">
-              <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-yellow-400">Username</dt>
                 <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">
                   {userInfo.username}
                 </dd>
               </div>
-              <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-yellow-400">Password</dt>
                 <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">********</dd>
               </div>
               {isEditing ? (
                 <>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-yellow-400">Password</dt>
+                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">
+                      <input
+                        type="password"
+                        value="********"
+                        disabled
+                        className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 cursor-not-allowed"
+                      />
+                    </dd>
+                  </div>
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">First Name</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">
                       <input
@@ -134,7 +148,7 @@ export default function MyInfoPage() {
                       />
                     </dd>
                   </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">Last Name</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">
                       <input
@@ -150,15 +164,15 @@ export default function MyInfoPage() {
                       />
                     </dd>
                   </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">Email address</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.email}</dd>
                   </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">Birth Date</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.birthDate}</dd>
                   </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">Telephone</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.tel}</dd>
                   </div>
@@ -183,23 +197,23 @@ export default function MyInfoPage() {
                 </>
               ) : (
                 <>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">First Name</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.firstName}</dd>
                   </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">Last Name</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.lastName}</dd>
                   </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">Email address</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.email}</dd>
                   </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">Birth Date</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.birthDate}</dd>
                   </div>
-                  <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt className="text-sm font-medium text-yellow-400">Telephone</dt>
                     <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.tel}</dd>
                   </div>
@@ -226,6 +240,8 @@ export default function MyInfoPage() {
           <p>Unable to load user information.</p>
         </div>
       )}
+      <LoadingModal isOpen={isLoading} />
+    <LoadingModal isOpen={isLoading} />
     </PageWrapper>
   );
 }
