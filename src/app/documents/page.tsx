@@ -122,7 +122,7 @@ export default function DocumentsPage() {
 
   return (
     <PageWrapper>
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-press-start leading-tight mb-12 text-center text-yellow-400">Documents</h1>
+      <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold leading-tight mb-12 text-center text-gray-800">Documents</h1>
 
       <Suspense fallback={<div>Loading form...</div>}>
         <LazyDocumentForm
@@ -137,7 +137,7 @@ export default function DocumentsPage() {
       {error ? (
         <div className="text-center text-red-500 text-xl">{error}</div>
       ) : loading ? (
-        <div className="text-center text-white text-xl font-press-start">Loading documents...</div>
+        <div className="text-center text-gray-800 text-xl font-semibold">Loading documents...</div>
       ) : (
         <Suspense fallback={<div>Loading documents...</div>}>
           <LazyDocumentList documents={documents} handleEditClick={handleEditClick} />

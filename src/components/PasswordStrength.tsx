@@ -17,20 +17,20 @@ export default function PasswordStrength({ passwordStrength, hasMinLength, hasUp
           style={{ width: `${passwordStrength === 'Weak' ? '33%' : passwordStrength === 'Medium' ? '66%' : '100%'}` }}
         ></div>
       </div>
-      <p className={`text-sm font-press-start mt-1 ${passwordStrength === 'Weak' ? 'text-red-500' : passwordStrength === 'Medium' ? 'text-yellow-500' : 'text-green-500'}`}>
+      <p className={`text-sm mt-1 ${passwordStrength === 'Weak' ? 'text-red-500' : passwordStrength === 'Medium' ? 'text-yellow-500' : 'text-green-500'}`}>
         Strength: {passwordStrength}
       </p>
       <div className="mt-2 text-sm">
-        <p className={`font-press-start ${hasMinLength ? 'text-green-500' : 'text-red-500'}`}>
+        <p className={`${hasMinLength ? 'text-green-500' : 'text-red-500'}`}>
           {hasMinLength ? '✓' : '✗'} Min 8 characters
         </p>
-        <p className={`font-press-start ${hasUpperCase ? 'text-green-500' : 'text-red-500'}`}>
+        <p className={`${hasUpperCase ? 'text-green-500' : 'text-red-500'}`}>
           {hasUpperCase ? '✓' : '✗'} Uppercase letter
         </p>
-        <p className={`font-press-start ${hasLowerCase ? 'text-green-500' : 'text-red-500'}`}>
+        <p className={`${hasLowerCase ? 'text-green-500' : 'text-red-500'}`}>
           {hasLowerCase ? '✓' : '✗'} Lowercase letter
         </p>
-        <p className={`font-press-start ${hasSymbol ? 'text-green-500' : 'text-red-500'}`}>
+        <p className={`${hasSymbol ? 'text-green-500' : 'text-red-500'}`}>
           {hasSymbol ? '✓' : '✗'} Special symbol
         </p>
       </div>

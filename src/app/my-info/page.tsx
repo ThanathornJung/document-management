@@ -93,48 +93,48 @@ export default function MyInfoPage() {
 
   return (
     <PageWrapper>
-      <h1 className="text-2xl font-bold mb-4 font-press-start text-yellow-400 text-center">My Info</h1>
+      <h1 className="text-2xl font-bold mb-4 text-gray-800 text-center">My Info</h1>
       
       {!user ? (
-        <div className="bg-yellow-900 border-l-4 border-yellow-400 text-yellow-200 p-4 font-press-start" role="alert">
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
           <p className="font-bold">Login Required</p>
           <p>Please log in to view your information.</p>
         </div>
       ) : error ? (
-        <div className="bg-red-900 border-l-4 border-red-400 text-red-200 p-4 font-press-start" role="alert">
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
           <p className="font-bold">Error</p>
           <p>{error}</p>
         </div>
       ) : userInfo ? (
-        <div className="bg-gray-800 shadow overflow-hidden sm:rounded-lg p-6 border border-yellow-400 max-w-lg mx-auto">
-          <div className="border-t border-gray-700 px-4 py-5 sm:p-0">
-            <dl className="sm:divide-y sm:divide-gray-700">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6 max-w-lg mx-auto">
+          <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
+            <dl className="sm:divide-y sm:divide-gray-200">
               <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-yellow-400">Username</dt>
-                <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">Username</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                   {userInfo.username}
                 </dd>
               </div>
               <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-yellow-400">Password</dt>
-                <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">********</dd>
+                <dt className="text-sm font-medium text-gray-500">Password</dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">********</dd>
               </div>
               {isEditing ? (
                 <>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Password</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">
+                    <dt className="text-sm font-medium text-gray-500">Password</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                       <input
                         type="password"
                         value="********"
                         disabled
-                        className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 cursor-not-allowed"
+                        className="w-full p-2 rounded bg-gray-100 text-gray-900 border border-gray-300 cursor-not-allowed"
                       />
                     </dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">First Name</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">
+                    <dt className="text-sm font-medium text-gray-500">First Name</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                       <input
                         type="text"
                         value={editableUserInfo?.firstName || ""}
@@ -144,13 +144,13 @@ export default function MyInfoPage() {
                             firstName: e.target.value,
                           })
                         }
-                        className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
+                        className="w-full p-2 rounded bg-gray-50 text-gray-900 border border-gray-300"
                       />
                     </dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Last Name</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">
+                    <dt className="text-sm font-medium text-gray-500">Last Name</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                       <input
                         type="text"
                         value={editableUserInfo?.lastName || ""}
@@ -160,35 +160,35 @@ export default function MyInfoPage() {
                             lastName: e.target.value,
                           })
                         }
-                        className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
+                        className="w-full p-2 rounded bg-gray-50 text-gray-900 border border-gray-300"
                       />
                     </dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Email address</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.email}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Email address</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{userInfo.email}</dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Birth Date</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.birthDate}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Birth Date</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{userInfo.birthDate}</dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Telephone</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.tel}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Telephone</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{userInfo.tel}</dd>
                   </div>
                   
                   <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400"></dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2 flex justify-end space-x-2">
+                    <dt className="text-sm font-medium text-gray-500"></dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex justify-end space-x-2">
                       <button
                         onClick={handleSave}
-                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded font-press-start text-sm"
+                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded text-sm"
                       >
                         Save
                       </button>
                       <button
                         onClick={() => setIsEditing(false)}
-                        className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded font-press-start text-sm"
+                        className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm"
                       >
                         Cancel
                       </button>
@@ -198,32 +198,32 @@ export default function MyInfoPage() {
               ) : (
                 <>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">First Name</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.firstName}</dd>
+                    <dt className="text-sm font-medium text-gray-500">First Name</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{userInfo.firstName}</dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Last Name</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.lastName}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Last Name</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{userInfo.lastName}</dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Email address</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.email}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Email address</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{userInfo.email}</dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Birth Date</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.birthDate}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Birth Date</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{userInfo.birthDate}</dd>
                   </div>
                   <div className="py-3 grid grid-cols-1 sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400">Telephone</dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2">{userInfo.tel}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Telephone</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{userInfo.tel}</dd>
                   </div>
                   
                   <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-yellow-400"></dt>
-                    <dd className="mt-1 text-sm text-white sm:mt-0 sm:col-span-2 flex justify-end space-x-2">
+                    <dt className="text-sm font-medium text-gray-500"></dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex justify-end space-x-2">
                       <button
                         onClick={() => setIsEditing(true)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded font-press-start text-sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded text-sm"
                       >
                         Edit
                       </button>
@@ -235,7 +235,7 @@ export default function MyInfoPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-red-900 border-l-4 border-red-400 text-red-200 p-4 font-press-start" role="alert">
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
           <p className="font-bold">Error</p>
           <p>Unable to load user information.</p>
         </div>

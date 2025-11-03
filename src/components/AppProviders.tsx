@@ -29,7 +29,7 @@ export default function AppProviders({ children }: AppProvidersProps) {
       <main className="pt-20 flex-grow">{children}</main>
       <footer className="bg-gray-900 bg-opacity-75 py-8 mt-12">
         <div className="container mx-auto px-6 text-center text-white">
-          <p className="font-press-start">&copy; 2024 Document Management. All rights reserved.</p>
+          <p>&copy; 2024 Document Management. All rights reserved.</p>
         </div>
       </footer>
     </AuthProvider>
