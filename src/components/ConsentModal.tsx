@@ -13,21 +13,21 @@ export default function ConsentModal({ isOpen, onClose, onAccept, children }: Co
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full mx-4 border-4 border-yellow-400">
-        <h2 className="text-2xl font-press-start text-yellow-400 mb-4">Terms and Conditions</h2>
-        <div className="text-white text-sm h-64 overflow-y-auto mb-6 pr-2 custom-scrollbar-style">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full mx-4 border-4 border-gray-200">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Terms and Conditions</h2>
+        <div className="text-gray-600 text-sm h-64 overflow-y-auto mb-6 pr-2 custom-scrollbar-style">
           {children}
         </div>
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className="bg-gray-600 text-white font-press-start py-2 px-4 shadow-lg hover:bg-gray-500 transition-colors"
+            className="bg-gray-200 text-gray-800 py-2 px-4 shadow-lg hover:bg-gray-300 transition-colors"
           >
             Close
           </button>
           <button
             onClick={onAccept}
-            className="bg-yellow-500 text-gray-900 font-press-start py-2 px-4 shadow-lg hover:bg-yellow-400 transition-colors"
+            className="bg-blue-600 text-white py-2 px-4 shadow-lg hover:bg-blue-700 transition-colors"
           >
             Accept
           </button>

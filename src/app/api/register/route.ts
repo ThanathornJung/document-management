@@ -31,6 +31,11 @@ export async function POST(request: Request) {
   try {
     const { firstName, lastName, birthDate, email, tel, username, password } = await request.json();
 
+    // Basic validation
+    if (!username || !password || !email || !firstName || !lastName) {
+      return NextResponse.json({ message: 'Missing required fields: username, password, email, firstName, lastName' }, { status: 400 });
+    }
+
     // Check if username or email already exists
     const existingUserByUsername = await dbContext.getUserByUsername(username);
     if (existingUserByUsername) {

@@ -13,6 +13,10 @@ export async function POST(request: Request) {
     const { username, password, rememberMe } = await request.json();
     console.log('Login API: Parsed request body');
 
+    if (!username || !password) {
+      return NextResponse.json({ message: 'Username and password are required' }, { status: 400 });
+    }
+
     // Find user by username
     const user = await dbContext.getUserByUsername(username);
     console.log('Login API: User fetched:', user ? user.username : 'not found');

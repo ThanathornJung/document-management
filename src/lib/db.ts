@@ -2,8 +2,11 @@ export interface Document {
   id: number;
   title: string;
   content: string;
-  createdAt: string;
-  updatedAt: string;
+  category: string;
+  description: string;
+  filePath: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface User {
@@ -12,9 +15,9 @@ export interface User {
   password?: string;
   firstName?: string;
   lastName?: string;
-  birthDate?: string;
+  birthDate?: Date;
   email?: string;
   tel?: string;
-  createdAt?: string;
-  updatedAt?: string; // Added
+  createdAt?: Date;
+  updatedAt?: Date; // Added
 }

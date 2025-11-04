@@ -17,8 +17,16 @@ export async function GET(request: NextRequest) {
     // Exclude sensitive information like password before sending to client
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _password, ...userWithoutPassword } = user;
-    console.log("Backend GET /api/users/[id] response:", userWithoutPassword);
-    return NextResponse.json(userWithoutPassword, { status: 200 });
+
+    // No need to format dates here, return raw Date objects
+    const responseUser = {
+      ...userWithoutPassword,
+      createdAt: userWithoutPassword.createdAt, // Already a Date object
+      updatedAt: userWithoutPassword.updatedAt, // Already a Date object
+    };
+
+    console.log("Backend GET /api/users/[id] response:", responseUser);
+    return NextResponse.json(responseUser, { status: 200 });
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
@@ -34,16 +42,31 @@ export async function PUT(request: NextRequest) {
 
     // Prevent changing sensitive fields like password or id through this route
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _password, id: _id, ...updatableData } = updatedData;
+    const { password: _password, id: _id, birthDate: rawBirthDate, ...updatableData } = updatedData;
 
-    const updatedUser = await dbContext.updateUser(userId, updatableData);
+    let birthDate: Date | undefined;
+    if (rawBirthDate) {
+      birthDate = new Date(rawBirthDate);
+      if (isNaN(birthDate.getTime())) {
+        return NextResponse.json({ message: 'Invalid birthDate format' }, { status: 400 });
+      }
+    }
+
+    const updatedUser = await dbContext.updateUser(userId, { ...updatableData, birthDate });
 
     if (!updatedUser) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    console.log("Backend PUT /api/users/[id] response:", updatedUser);
-    return NextResponse.json({ message: 'User updated successfully', user: updatedUser }, { status: 200 });
+    // Format dates for the response
+    const responseUser = {
+      ...updatedUser,
+      createdAt: updatedUser.createdAt ? new Date(updatedUser.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }) : undefined,
+      updatedAt: updatedUser.updatedAt ? new Date(updatedUser.updatedAt).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }) : undefined,
+    };
+
+    console.log("Backend PUT /api/users/[id] response:", responseUser);
+    return NextResponse.json({ message: 'User updated successfully', user: responseUser }, { status: 200 });
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });

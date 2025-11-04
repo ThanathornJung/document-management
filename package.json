@@ -10,6 +10,7 @@
     "analyze": "cross-env ANALYZE=true next build --webpack"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
     "@types/mssql": "^9.1.8",
     "bcrypt": "^6.0.0",
     "cookie": "^1.0.2",

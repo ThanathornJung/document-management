@@ -1,52 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 body {
-  font-family: 'Press Start 2P', cursive;
-  background-color: #000000; /* Black background */
-  color: #ffffff; /* Default white text color */
-  --hue1: 0;
-  --hue2: 120;
-  --hue3: 240;
-  --hue4: 60;
-  background-image:
-    radial-gradient(hsl(var(--hue1), 100%, 80%), hsl(var(--hue1), 100%, 40%) 2px, transparent 40px),
-    radial-gradient(hsl(var(--hue2), 100%, 70%), hsl(var(--hue2), 100%, 30%) 1px, transparent 30px),
-    radial-gradient(hsl(var(--hue3), 100%, 60%), hsl(var(--hue3), 100%, 20%) 2px, transparent 40px),
-    radial-gradient(hsl(var(--hue4), 100%, 50%), hsl(var(--hue4), 100%, 10%) 2px, transparent 30px);
-  background-size: 600px 600px, 400px 400px, 300px 300px, 200px 200px;
-  background-position: 0 0, 80px 120px, 200px 400px, 100px 200px;
-  animation: move-background 100s linear infinite, color-change1 20s linear infinite, color-change2 25s linear infinite, color-change3 30s linear infinite, color-change4 35s linear infinite;
-}
-
-@keyframes move-background {
-  from {
-    background-position: 0 0, 80px 120px, 200px 400px, 100px 200px;
-  }
-  to {
-    background-position: 600px 600px, 480px 720px, 500px 900px, 300px 700px;
-  }
-}
-
-@keyframes color-change1 {
-  from { --hue1: 0; }
-  to { --hue1: 360; }
-}
-@keyframes color-change2 {
-  from { --hue2: 120; }
-  to { --hue2: 480; } /* 360 + 120 */
-}
-@keyframes color-change3 {
-  from { --hue3: 240; }
-  to { --hue3: 600; } /* 360 + 240 */
-}
-@keyframes color-change4 {
-  from { --hue4: 60; }
-  to { --hue4: 420; } /* 360 + 60 */
+  font-family: 'Inter', sans-serif;
+  background-color: #f3f4f6; /* Light gray background */
+  color: #111827; /* Dark text color */
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Press Start 2P', cursive;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Custom scrollbar styles for ConsentModal */

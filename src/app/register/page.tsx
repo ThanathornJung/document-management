@@ -109,9 +109,9 @@ export default function Register() {
 
   return (
     <PageWrapper>
-      {localError && <p className="text-center mt-4 text-red-500 font-press-start">{localError}</p>}
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-press-start leading-tight mb-8 text-center text-yellow-400">Register</h1>
-      <div className="bg-gray-800 bg-opacity-75 p-6 sm:p-8 rounded-lg shadow-lg max-w-lg mx-auto">
+      {localError && <p className="text-center mt-4 text-red-500 font-semibold">{localError}</p>}
+      <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold leading-tight mb-8 text-center text-gray-800">Register</h1>
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg max-w-lg mx-auto">
         <Suspense fallback={<div>Loading form...</div>}>
           <LazyRegisterForm
             firstName={firstName} setFirstName={setFirstName}
