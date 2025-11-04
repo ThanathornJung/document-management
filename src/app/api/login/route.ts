@@ -3,22 +3,36 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
+import { LogRepository } from '@/lib/repositories/LogRepository';
+import { UserRepository } from '@/lib/repositories/UserRepository';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use environment variable in production
 const dbContext = AzureSqlDatabaseContext.getInstance();
+const logRepository = new LogRepository(dbContext);
+const userRepository = new UserRepository(dbContext);
 
 export async function POST(request: Request) {
+  let requestBody;
   try {
     console.log('Login API: Request received');
-    const { username, password, rememberMe } = await request.json();
+    requestBody = await request.json();
+    const { username, password, rememberMe } = requestBody;
     console.log('Login API: Parsed request body');
 
     if (!username || !password) {
+      await logRepository.addLogEntry({
+        username: username,
+        action: 'LOGIN',
+        details: 'Attempted login with missing fields',
+        result: 'FAILURE',
+        method: 'POST',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+      });
       return NextResponse.json({ message: 'Username and password are required' }, { status: 400 });
     }
 
     // Find user by username
-    const user = await dbContext.getUserByUsername(username);
+    const user = await userRepository.getUserByUsername(username);
     console.log('Login API: User fetched:', user ? user.username : 'not found');
 
     if (user && user.password && await bcrypt.compare(password, user.password)) {
@@ -46,14 +60,43 @@ export async function POST(request: Request) {
 
       response.headers.set('Set-Cookie', serializedCookie);
       console.log('Login API: Login successful response sent');
+      await logRepository.addLogEntry({
+        username: user.username,
+        action: 'LOGIN',
+        details: 'User logged in successfully',
+        result: 'SUCCESS',
+        method: 'POST',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+      });
+
       return response;
 
     } else {
       console.log('Login API: Invalid username or password');
+      await logRepository.addLogEntry({
+        username: username,
+        action: 'LOGIN',
+        details: 'Failed login attempt',
+        result: 'FAILURE',
+        method: 'POST',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+      });
       return NextResponse.json({ message: 'Invalid username or password' }, { status: 401 });
     }
   } catch (error) {
     console.error('Login API: Error during login:', error);
-    return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    try {
+      await logRepository.addLogEntry({
+        username: requestBody?.username || 'N/A',
+        action: 'LOGIN',
+        details: 'Error during login',
+        result: 'FAILURE',
+        method: 'POST',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+      });
+    } catch (logError) {
+      console.error('Login API: Error logging failed login attempt:', logError);
+    }
+    return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined }, { status: 500 });
   }
 }

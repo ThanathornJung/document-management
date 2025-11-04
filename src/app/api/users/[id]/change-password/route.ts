@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
+import { UserRepository } from '@/lib/repositories/UserRepository';
 
 const dbContext = AzureSqlDatabaseContext.getInstance();
+const userRepository = new UserRepository(dbContext);
 
 export async function PUT(request: NextRequest) {
   try {
@@ -11,7 +13,7 @@ export async function PUT(request: NextRequest) {
     const userId = parseInt(id, 10);
     const { currentPassword, newPassword } = await request.json();
 
-    const user = await dbContext.getUserById(userId);
+    const user = await userRepository.getUserById(userId);
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -25,7 +27,7 @@ export async function PUT(request: NextRequest) {
     // Hash new password
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    const updated = await dbContext.updateUserPassword(userId, hashedNewPassword);
+    const updated = await userRepository.updateUserPassword(userId, hashedNewPassword);
 
     if (!updated) {
       return NextResponse.json({ message: 'Failed to update password' }, { status: 500 });

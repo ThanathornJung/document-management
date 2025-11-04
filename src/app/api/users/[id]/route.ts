@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
+import { UserRepository } from '@/lib/repositories/UserRepository';
 
 const dbContext = AzureSqlDatabaseContext.getInstance();
+const userRepository = new UserRepository(dbContext);
 
 export async function GET(request: NextRequest) {
   try {
     const pathname = request.nextUrl.pathname;
     const id = pathname.split('/')[3];
     const userId = parseInt(id, 10);
-    const user = await dbContext.getUserById(userId);
+    const user = await userRepository.getUserById(userId);
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -21,8 +23,8 @@ export async function GET(request: NextRequest) {
     // No need to format dates here, return raw Date objects
     const responseUser = {
       ...userWithoutPassword,
-      createdAt: userWithoutPassword.createdAt, // Already a Date object
-      updatedAt: userWithoutPassword.updatedAt, // Already a Date object
+      createdAt: userWithoutPassword.createdAt ? new Date(userWithoutPassword.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }) : undefined,
+      updatedAt: userWithoutPassword.updatedAt ? new Date(userWithoutPassword.updatedAt).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }) : undefined,
     };
 
     console.log("Backend GET /api/users/[id] response:", responseUser);
@@ -52,7 +54,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    const updatedUser = await dbContext.updateUser(userId, { ...updatableData, birthDate });
+    const updatedUser = await userRepository.updateUser(userId, { ...updatableData, birthDate });
 
     if (!updatedUser) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });

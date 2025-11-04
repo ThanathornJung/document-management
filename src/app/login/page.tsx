@@ -27,14 +27,26 @@ export default function Login() {
         body: JSON.stringify({ username, password, rememberMe }),
       });
 
-      const data = await response.json();
+      let data;
+      if (!response.ok) {
+        const errorText = await response.text();
+        try {
+          data = JSON.parse(errorText);
+        } catch (jsonParseError) { // eslint-disable-line @typescript-eslint/no-unused-vars
+          data = { message: errorText || `Login failed with status: ${response.status}` };
+        }
+        setMessage(data.message || 'An unexpected error occurred during login.');
+        setIsSuccessMessage(false);
+        return;
+      } else {
+        data = await response.json();
+      }
 
       if (response.ok) {
-        // Assuming data.user contains id and username
-        login({ id: data.user.id, username: data.user.username }, rememberMe); // Pass user data and rememberMe to login
+        login({ id: data.user.id, username: data.user.username }, rememberMe);
         setMessage(data.message || 'Login successful!');
         setIsSuccessMessage(true);
-        router.push('/'); // Redirect to home page
+        router.push('/');
       } else {
         setMessage(data.message || 'Login failed: ' + data.message);
         setIsSuccessMessage(false);

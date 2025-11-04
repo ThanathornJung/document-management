@@ -13,8 +13,8 @@ export const sqlConfig: config = { // Use config type
   options: {
     encrypt: true, // Use true for Azure SQL Database
     trustServerCertificate: false, // As per JDBC string
-    connectTimeout: 60000, // 60 seconds
-    requestTimeout: 60000, // 60 seconds
+    connectTimeout: 120000, // 120 seconds
+    requestTimeout: 120000, // 120 seconds
     // You can add other options here like requestTimeout, connectTimeout, etc.
   },
 };

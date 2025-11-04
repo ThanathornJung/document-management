@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
+import { DocumentRepository } from '@/lib/repositories/DocumentRepository';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 
 export async function GET(request: Request) {
   const dbContext = AzureSqlDatabaseContext.getInstance();
+  const documentRepository = new DocumentRepository(dbContext);
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
@@ -12,7 +14,7 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get('sortBy') || 'id';
     const sortOrder = (searchParams.get('sortOrder') as 'ASC' | 'DESC') || 'ASC';
 
-    const documents = await dbContext.getDocuments(page, pageSize, sortBy, sortOrder);
+    const documents = await documentRepository.getDocuments(page, pageSize, sortBy, sortOrder);
     
     // Format dates for the response
     const formattedDocuments = documents.map(doc => ({
@@ -33,6 +35,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const dbContext = AzureSqlDatabaseContext.getInstance();
+  const documentRepository = new DocumentRepository(dbContext);
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -51,7 +54,7 @@ export async function POST(request: Request) {
     const filePath = join(process.cwd(), 'public', 'uploads', filename);
     await writeFile(filePath, buffer);
 
-    const newDocument = await dbContext.createDocument({
+    const newDocument = await documentRepository.createDocument({
       title: title || file.name,
       category,
       description,
@@ -73,6 +76,7 @@ import { unlink } from 'fs/promises';
 
 export async function PUT(request: Request) {
   const dbContext = AzureSqlDatabaseContext.getInstance();
+  const documentRepository = new DocumentRepository(dbContext);
   try {
     const contentType = request.headers.get('content-type') || '';
     let id, category, description, file, newFileName;
@@ -93,7 +97,7 @@ export async function PUT(request: Request) {
       newFileName = body.newFileName;
     }
 
-    const existingDocument = await dbContext.getDocumentById(id);
+    const existingDocument = await documentRepository.getDocumentById(id);
     if (!existingDocument) {
       return NextResponse.json({ message: 'Document not found' }, { status: 404 });
     }
@@ -127,7 +131,7 @@ export async function PUT(request: Request) {
     }
 
     console.log('Updating document with:', { id, category, description, filePath, title });
-    const updatedDocument = await dbContext.updateDocument(id, { category, description, filePath, title });
+    const updatedDocument = await documentRepository.updateDocument(id, { category, description, filePath, title });
 
     return NextResponse.json({ message: 'Document updated successfully', document: {
       ...updatedDocument,
@@ -142,11 +146,12 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   const dbContext = AzureSqlDatabaseContext.getInstance();
+  const documentRepository = new DocumentRepository(dbContext);
   try {
     const { searchParams } = new URL(request.url);
     const id = parseInt(searchParams.get('id') as string, 10);
 
-    const existingDocument = await dbContext.getDocumentById(id);
+    const existingDocument = await documentRepository.getDocumentById(id);
     if (!existingDocument) {
       return NextResponse.json({ message: 'Document not found' }, { status: 404 });
     }
@@ -160,7 +165,7 @@ export async function DELETE(request: Request) {
       }
     }
 
-    const deleted = await dbContext.deleteDocument(id);
+    const deleted = await documentRepository.deleteDocument(id);
 
     if (!deleted) {
       return NextResponse.json({ message: 'Failed to delete document' }, { status: 500 });

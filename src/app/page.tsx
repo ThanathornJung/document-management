@@ -12,9 +12,6 @@ export default function Home() {
   return (
     <PageWrapper> {/* Use PageWrapper here */}
       <section
-        // initial={{ opacity: 0, y: 20 }} // Removed motion props
-        // animate={{ opacity: 1, y: 0 }} // Removed motion props
-        // transition={{ duration: 0.5 }} // Removed motion props
         className="text-center"
       >
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold leading-tight mb-4 text-gray-800">
