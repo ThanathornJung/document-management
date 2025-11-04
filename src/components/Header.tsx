@@ -56,12 +56,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
         <nav className="hidden sm:flex items-center space-x-8"> {/* This hides desktop nav on mobile */}
           {isLoggedIn && (
             <>
-              <Link
-                href="/documents"
-                className="font-semibold text-gray-600 hover:text-blue-600"
-              >
-                Documents
-              </Link>
+              
               
             </>
           )}
@@ -100,6 +95,11 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                   <Link href="/my-info">
                     <button onClick={() => setIsProfileMenuOpen(false)} className="block w-full text-left px-4 py-2 text-sm text-gray-800 font-semibold hover:bg-gray-100">
                       My Info
+                    </button>
+                  </Link>
+                  <Link href="/documents">
+                    <button onClick={() => setIsProfileMenuOpen(false)} className="block w-full text-left px-4 py-2 text-sm text-gray-800 font-semibold hover:bg-gray-100">
+                      My Documents
                     </button>
                   </Link>
                   <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-800 font-semibold hover:bg-gray-100">

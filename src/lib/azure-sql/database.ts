@@ -10,7 +10,6 @@ export class AzureSqlDatabaseContext {
   private pool: sql.ConnectionPool | undefined;
 
   private constructor() { // Make constructor private
-    console.log("Azure SQL Database Context initialized with config:", sqlConfig);
   }
 
   public static getInstance(): AzureSqlDatabaseContext {
@@ -88,9 +87,28 @@ export class AzureSqlDatabaseContext {
   }
 
   // User CRUD Operations
-  async getUsers(): Promise<User[]> {
+  async getUsers(page: number = 1, pageSize: number = 10, sortBy: string = 'id', sortOrder: 'ASC' | 'DESC' = 'ASC'): Promise<User[]> {
     await this.initializePool();
-    const result = await this.pool!.request().query('SELECT id, username, firstName, lastName, birthDate, email, tel, createdAt FROM Users');
+    const offset = (page - 1) * pageSize;
+    const result = await this.pool!.request()
+      .input('offset', sql.Int, offset)
+      .input('pageSize', sql.Int, pageSize)
+      .query(`
+      SELECT 
+        id, 
+        username, 
+        firstName, 
+        lastName, 
+        birthDate, 
+        email, 
+        tel, 
+        createdAt,
+        updatedAt
+      FROM Users
+      ORDER BY ${sortBy} ${sortOrder}
+      OFFSET @offset ROWS
+      FETCH NEXT @pageSize ROWS ONLY
+    `);
     return result.recordset as User[];
   }
 
@@ -98,7 +116,19 @@ export class AzureSqlDatabaseContext {
     await this.initializePool();
     const result = await this.pool!.request()
       .input('id', sql.Int, id)
-      .query('SELECT id, username, firstName, lastName, birthDate, email, tel, createdAt FROM Users WHERE id = @id');
+      .query(`
+        SELECT 
+          id, 
+          username, 
+          firstName, 
+          lastName, 
+          birthDate, 
+          email, 
+          tel, 
+          createdAt,
+          updatedAt
+        FROM Users WHERE id = @id
+      `);
     return result.recordset[0] as User | undefined;
   }
 
@@ -106,7 +136,20 @@ export class AzureSqlDatabaseContext {
     await this.initializePool();
     const result = await this.pool!.request()
       .input('username', sql.NVarChar, username)
-      .query('SELECT id, username, password, firstName, lastName, birthDate, email, tel, createdAt FROM Users WHERE username = @username');
+      .query(`
+        SELECT 
+          id, 
+          username, 
+          password, 
+          firstName, 
+          lastName, 
+          birthDate, 
+          email, 
+          tel, 
+          createdAt,
+          updatedAt
+        FROM Users WHERE username = @username
+      `);
     return result.recordset[0] as User | undefined;
   }
 
@@ -114,7 +157,20 @@ export class AzureSqlDatabaseContext {
     await this.initializePool();
     const result = await this.pool!.request()
       .input('email', sql.NVarChar, email)
-      .query('SELECT id, username, password, firstName, lastName, birthDate, email, tel, createdAt FROM Users WHERE email = @email');
+      .query(`
+        SELECT 
+          id, 
+          username, 
+          password, 
+          firstName, 
+          lastName, 
+          birthDate, 
+          email, 
+          tel, 
+          createdAt,
+          updatedAt
+        FROM Users WHERE email = @email
+      `);
     return result.recordset[0] as User | undefined;
   }
 
@@ -131,7 +187,16 @@ export class AzureSqlDatabaseContext {
 
     const result = await request.query(`
       INSERT INTO Users (username, password, firstName, lastName, birthDate, email, tel)
-      OUTPUT INSERTED.id, INSERTED.username, INSERTED.firstName, INSERTED.lastName, INSERTED.birthDate, INSERTED.email, INSERTED.tel, INSERTED.createdAt
+      OUTPUT 
+        INSERTED.id, 
+        INSERTED.username, 
+        INSERTED.firstName, 
+        INSERTED.lastName, 
+        INSERTED.birthDate, 
+        INSERTED.email, 
+        INSERTED.tel, 
+        INSERTED.createdAt,
+        INSERTED.updatedAt
       VALUES (@username, @password, @firstName, @lastName, @birthDate, @email, @tel)
     `);
     return result.recordset[0] as User;
@@ -153,15 +218,23 @@ export class AzureSqlDatabaseContext {
       // If no other fields are updated, just update updatedAt
       query += ' WHERE id = @id';
     } else {
-      query += ', ' + updates.join(', ') + ' WHERE id = @id';
+      query += `, ${updates.join(', ')}
+      OUTPUT 
+        INSERTED.id, 
+        INSERTED.username, 
+        INSERTED.firstName, 
+        INSERTED.lastName, 
+        INSERTED.birthDate, 
+        INSERTED.email, 
+        INSERTED.tel, 
+        INSERTED.createdAt,
+        INSERTED.updatedAt
+      WHERE id = @id`;
     }
     request.input('id', sql.Int, id);
 
     const result = await request.query(query);
-    if (result.rowsAffected[0] > 0) {
-      return this.getUserById(id);
-    }
-    return undefined;
+    return result.recordset[0] as User | undefined;
   }
 
   async updateUserPassword(id: number, hashedPassword: string): Promise<boolean> {
@@ -174,42 +247,107 @@ export class AzureSqlDatabaseContext {
   }
 
   // Document CRUD Operations
-  async getDocuments(): Promise<Document[]> {
+  async getDocuments(page: number = 1, pageSize: number = 10, sortBy: string = 'id', sortOrder: 'ASC' | 'DESC' = 'ASC'): Promise<Document[]> {
     await this.initializePool();
-    const result = await this.pool!.request().query('SELECT id, title, content, createdAt, updatedAt FROM Documents');
+    const offset = (page - 1) * pageSize;
+    const result = await this.pool!.request()
+      .input('offset', sql.Int, offset)
+      .input('pageSize', sql.Int, pageSize)
+      .query(`
+        SELECT 
+          id, 
+          title, 
+          category, 
+          description, 
+          filePath, 
+          createdAt, 
+          updatedAt
+        FROM Documents
+        ORDER BY ${sortBy} ${sortOrder}
+        OFFSET @offset ROWS
+        FETCH NEXT @pageSize ROWS ONLY
+      `);
     return result.recordset as Document[];
   }
 
-  async createDocument(document: Omit<Document, 'id' | 'createdAt' | 'updatedAt'>): Promise<Document> {
+  async getDocumentById(id: number): Promise<Document | undefined> {
+    await this.initializePool();
+    const result = await this.pool!.request()
+      .input('id', sql.Int, id)
+      .query(`
+        SELECT 
+          id, 
+          title, 
+          category, 
+          description, 
+          filePath, 
+          createdAt, 
+          updatedAt
+        FROM Documents WHERE id = @id
+      `);
+    return result.recordset[0] as Document | undefined;
+  }
+
+  async createDocument(document: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'content'>): Promise<Document> {
     await this.initializePool();
     const request = this.pool!.request();
     request.input('title', sql.NVarChar, document.title);
-    request.input('content', sql.NVarChar, document.content);
+    request.input('category', sql.NVarChar, document.category);
+    request.input('description', sql.NVarChar, document.description);
+    request.input('filePath', sql.NVarChar, document.filePath);
 
     const result = await request.query(`
-      INSERT INTO Documents (title, content)
-      OUTPUT INSERTED.id, INSERTED.title, INSERTED.content, INSERTED.createdAt, INSERTED.updatedAt
-      VALUES (@title, @content)
+      INSERT INTO Documents (title, category, description, filePath)
+      OUTPUT 
+        INSERTED.id, 
+        INSERTED.title, 
+        INSERTED.category, 
+        INSERTED.description, 
+        INSERTED.filePath, 
+        INSERTED.createdAt, 
+        INSERTED.updatedAt
+      VALUES (@title, @category, @description, @filePath)
     `);
     return result.recordset[0] as Document;
   }
 
-  async updateDocument(id: number, documentData: Partial<Omit<Document, 'id' | 'createdAt'>>): Promise<Document | undefined> {
+  async updateDocument(id: number, documentData: Partial<Omit<Document, 'id' | 'createdAt' | 'updatedAt'> & { filePath?: string }>): Promise<Document | undefined> {
     await this.initializePool();
     const request = this.pool!.request();
-    let query = 'UPDATE Documents SET updatedAt = GETDATE()'; // Always update updatedAt
-    
-    if (documentData.title !== undefined) { query += ', title = @title'; request.input('title', sql.NVarChar, documentData.title); }
-    if (documentData.content !== undefined) { query += ', content = @content'; request.input('content', sql.NVarChar, documentData.content); }
+    let query = 'UPDATE Documents SET updatedAt = GETDATE()';
+    const updates: string[] = [];
 
-    query += ' WHERE id = @id';
+    if (documentData.title !== undefined) { updates.push('title = @title'); request.input('title', sql.NVarChar, documentData.title); }
+    if (documentData.category !== undefined) { updates.push('category = @category'); request.input('category', sql.NVarChar, documentData.category); }
+    if (documentData.description !== undefined) { updates.push('description = @description'); request.input('description', sql.NVarChar, documentData.description); }
+    if (documentData.filePath !== undefined) { updates.push('filePath = @filePath'); request.input('filePath', sql.NVarChar, documentData.filePath); }
+
+    if (updates.length === 0) {
+      return this.getDocumentById(id);
+    }
+
+    query += `, ${updates.join(', ')}
+      OUTPUT 
+        INSERTED.id, 
+        INSERTED.title, 
+        INSERTED.category, 
+        INSERTED.description, 
+        INSERTED.filePath, 
+        INSERTED.createdAt, 
+        INSERTED.updatedAt
+      WHERE id = @id`;
     request.input('id', sql.Int, id);
 
     const result = await request.query(query);
-    if (result.rowsAffected[0] > 0) {
-      return (await this.pool!.request().input('id', sql.Int, id).query('SELECT id, title, content, createdAt, updatedAt FROM Documents WHERE id = @id')).recordset[0] as Document;
-    }
-    return undefined;
+    return result.recordset[0] as Document | undefined;
+  }
+
+  async deleteDocument(id: number): Promise<boolean> {
+    await this.initializePool();
+    const result = await this.pool!.request()
+      .input('id', sql.Int, id)
+      .query('DELETE FROM Documents WHERE id = @id');
+    return result.rowsAffected[0] > 0;
   }
 
   public async executeQuery(query: string): Promise<sql.IResult<unknown>> {

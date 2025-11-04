@@ -6,10 +6,12 @@ export interface User {
   username: string;
   firstName?: string;
   lastName?: string;
-  birthDate?: string;
+  birthDate?: Date;
   email?: string;
   tel?: string;
   profilePicture?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 interface AuthContextType {

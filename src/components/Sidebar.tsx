@@ -22,7 +22,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <div
-      className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 transform ${
+      className={`fixed top-0 left-0 h-full w-3/4 max-w-xs bg-white shadow-lg z-50 transform ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } transition-transform duration-300 ease-in-out`}>
       <div className="p-4 flex justify-between items-center border-b border-gray-200">
@@ -74,8 +74,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               className="block px-4 py-2 text-gray-800 font-semibold hover:bg-gray-100 rounded"
               onClick={onClose}
             >
-              Documents
+              My Documents
             </Link>
+            
             <button
               onClick={handleLogout}
               className="block w-full text-left px-4 py-2 text-gray-800 font-semibold hover:bg-gray-100 rounded"
