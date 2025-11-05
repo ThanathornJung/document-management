@@ -24,6 +24,7 @@ export class UserRepository {
         birthDate, 
         email, 
         tel, 
+        role, 
         createdAt,
         updatedAt
       FROM Users
@@ -47,6 +48,7 @@ export class UserRepository {
           birthDate, 
           email, 
           tel, 
+          role, 
           createdAt,
           updatedAt
         FROM Users WHERE id = @id
@@ -68,6 +70,7 @@ export class UserRepository {
           birthDate, 
           email, 
           tel, 
+          role, 
           createdAt,
           updatedAt
         FROM Users WHERE username = @username
@@ -89,6 +92,7 @@ export class UserRepository {
           birthDate, 
           email, 
           tel, 
+          role, 
           createdAt,
           updatedAt
         FROM Users WHERE email = @email
@@ -96,7 +100,7 @@ export class UserRepository {
     return result.recordset[0] as User | undefined;
   }
 
-  async createUser(user: Omit<User, 'id' | 'createdAt'>): Promise<User> {
+  async createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
     const request = await this.dbContext.createRequest();
     request.input('username', sql.NVarChar, user.username);
     request.input('password', sql.NVarChar, user.password);
@@ -105,9 +109,10 @@ export class UserRepository {
     request.input('birthDate', sql.Date, user.birthDate);
     request.input('email', sql.NVarChar, user.email);
     request.input('tel', sql.NVarChar, user.tel);
+    request.input('role', sql.NVarChar, user.role || 'user');
 
     const result = await request.query(`
-      INSERT INTO Users (username, password, firstName, lastName, birthDate, email, tel)
+      INSERT INTO Users (username, password, firstName, lastName, birthDate, email, tel, role)
       OUTPUT 
         INSERTED.id, 
         INSERTED.username, 
@@ -116,14 +121,15 @@ export class UserRepository {
         INSERTED.birthDate, 
         INSERTED.email, 
         INSERTED.tel, 
+        INSERTED.role, 
         INSERTED.createdAt,
         INSERTED.updatedAt
-      VALUES (@username, @password, @firstName, @lastName, @birthDate, @email, @tel)
+      VALUES (@username, @password, @firstName, @lastName, @birthDate, @email, @tel, @role)
     `);
     return result.recordset[0] as User;
   }
 
-  async updateUser(id: number, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt'>>): Promise<User | undefined> {
+  async updateUser(id: number, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt' | 'updatedAt'>>): Promise<User | undefined> {
     const request = await this.dbContext.createRequest();
     let query = 'UPDATE Users SET updatedAt = GETDATE()'; // Always update updatedAt
     const updates: string[] = [];
@@ -133,6 +139,7 @@ export class UserRepository {
     if (userData.birthDate !== undefined) { updates.push('birthDate = @birthDate'); request.input('birthDate', sql.Date, userData.birthDate); }
     if (userData.email !== undefined) { updates.push('email = @email'); request.input('email', sql.NVarChar, userData.email); }
     if (userData.tel !== undefined) { updates.push('tel = @tel'); request.input('tel', sql.NVarChar, userData.tel); }
+    if (userData.role !== undefined) { updates.push('role = @role'); request.input('role', sql.NVarChar, userData.role); }
 
     if (updates.length === 0) {
       // If no other fields are updated, just update updatedAt
@@ -147,6 +154,7 @@ export class UserRepository {
         INSERTED.birthDate, 
         INSERTED.email, 
         INSERTED.tel, 
+        INSERTED.role, 
         INSERTED.createdAt,
         INSERTED.updatedAt
       WHERE id = @id`;

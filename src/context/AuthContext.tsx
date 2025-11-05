@@ -11,6 +11,7 @@ export interface User {
   email?: string;
   tel?: string;
   profilePicture?: string;
+  role?: string; // Added role property
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -59,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (userData: User, rememberMe: boolean) => {
     setIsLoggedIn(true);
     setUser(userData);
-    const userString = JSON.stringify({ id: userData.id, username: userData.username });
+    const userString = JSON.stringify({ id: userData.id, username: userData.username, role: userData.role });
     if (rememberMe) {
       localStorage.setItem('user', userString);
       sessionStorage.removeItem('user'); // Clear session storage if rememberMe is true

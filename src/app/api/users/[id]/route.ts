@@ -5,12 +5,12 @@ import { LogRepository } from '@/lib/repositories/LogRepository';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use environment variable in production
-
-interface JwtPayload {
-  id: number;
-  username: string;
+const JWT_SECRET: string = process.env.JWT_SECRET as string;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set.');
 }
+
+
 
 async function getUsernameFromToken(): Promise<string> {
   const cookieStore = await cookies();
@@ -18,8 +18,11 @@ async function getUsernameFromToken(): Promise<string> {
 
   if (token) {
     try {
-      const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
-      return decodedToken.username || 'system';
+      const decodedToken: unknown = jwt.verify(token, JWT_SECRET);
+      if (typeof decodedToken === 'object' && decodedToken !== null && 'username' in decodedToken && typeof (decodedToken as { username: unknown }).username === 'string') {
+        return (decodedToken as { username: string }).username || 'system';
+      }
+      return 'system';
     } catch (error) {
       console.error('Error decoding JWT token:', error);
     }

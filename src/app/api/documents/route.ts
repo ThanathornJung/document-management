@@ -7,12 +7,12 @@ import { join } from 'path';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use environment variable in production
-
-interface JwtPayload {
-  id: number;
-  username: string;
+const JWT_SECRET: string = process.env.JWT_SECRET as string;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set.');
 }
+
+
 
 // Helper function to get user ID from JWT token
 async function getUserIdFromToken(): Promise<number | null> {
@@ -21,8 +21,30 @@ async function getUserIdFromToken(): Promise<number | null> {
 
   if (token) {
     try {
-      const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
-      return decodedToken.id;
+      const decodedToken: unknown = jwt.verify(token, JWT_SECRET);
+      if (typeof decodedToken === 'object' && decodedToken !== null && 'id' in decodedToken && typeof (decodedToken as { id: unknown }).id === 'number') {
+        return (decodedToken as { id: number }).id;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error decoding JWT token:', error);
+      return null;
+    }
+  }
+  return null;
+}
+
+async function getUserRoleFromToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
+  if (token) {
+    try {
+      const decodedToken: unknown = jwt.verify(token, JWT_SECRET);
+      if (typeof decodedToken === 'object' && decodedToken !== null && 'role' in decodedToken && typeof (decodedToken as { role: unknown }).role === 'string') {
+        return (decodedToken as { role: string }).role || 'user';
+      }
+      return null;
     } catch (error) {
       console.error('Error decoding JWT token:', error);
       return null;
@@ -38,8 +60,11 @@ async function getUsernameFromToken(): Promise<string> {
 
   if (token) {
     try {
-      const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
-      return decodedToken.username || 'system';
+      const decodedToken: unknown = jwt.verify(token, JWT_SECRET);
+      if (typeof decodedToken === 'object' && decodedToken !== null && 'username' in decodedToken && typeof (decodedToken as { username: unknown }).username === 'string') {
+        return (decodedToken as { username: string }).username || 'system';
+      }
+      return 'system';
     } catch (error) {
       console.error('Error decoding JWT token:', error);
     }
@@ -53,18 +78,24 @@ export async function GET(request: Request) {
     dbContext = await AzureSqlDatabaseContext.getInstance();
     const documentRepository = new DocumentRepository(dbContext);
     const userId = await getUserIdFromToken();
-
-    if (!userId) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
+    const userRole = await getUserRoleFromToken();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     const sortBy = searchParams.get('sortBy') || 'id';
     const sortOrder = (searchParams.get('sortOrder') as 'ASC' | 'DESC') || 'ASC';
+    const fetchAll = searchParams.get('all') === 'true';
 
-    const documents = await documentRepository.getDocuments(userId, page, pageSize, sortBy, sortOrder);
+    let documents;
+    if (userRole === 'admin' && fetchAll) {
+      documents = await documentRepository.getDocuments(undefined, page, pageSize, sortBy, sortOrder); // Fetch all documents
+    } else {
+      if (!userId) {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+      }
+      documents = await documentRepository.getDocuments(userId, page, pageSize, sortBy, sortOrder); // Fetch user-specific documents
+    }
     
     // Format dates for the response
     const formattedDocuments = documents.map(doc => ({

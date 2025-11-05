@@ -76,6 +76,38 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             >
               My Documents
             </Link>
+            {user?.role === 'admin' && (
+              <>
+                <Link
+                  href="/admin"
+                  className="block px-3 py-2 text-base text-gray-800 font-semibold hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  Admin Dashboard
+                </Link>
+                <Link
+                  href="/admin/users"
+                  className="block px-3 py-2 text-base text-gray-800 font-semibold hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  User Management
+                </Link>
+                <Link
+                  href="/admin/documents"
+                  className="block px-3 py-2 text-base text-gray-800 font-semibold hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  Document Management
+                </Link>
+                <Link
+                  href="/admin/logs"
+                  className="block px-3 py-2 text-base text-gray-800 font-semibold hover:bg-gray-100 rounded-md"
+                  onClick={onClose}
+                >
+                  System Logs
+                </Link>
+              </>
+            )}
             
             <button
               onClick={handleLogout}

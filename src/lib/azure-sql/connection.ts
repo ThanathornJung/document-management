@@ -1,13 +1,13 @@
 import { config } from 'mssql'; // Import config directly
 
 export const sqlConfig: config = { // Use config type
-  server: process.env.AZURE_SQL_SERVER || 'sql-documentapi.database.windows.net',
-  database: process.env.AZURE_SQL_DATABASE || 'document_management_db',
+  server: process.env.AZURE_SQL_SERVER || '',
+  database: process.env.AZURE_SQL_DATABASE || '',
   authentication: {
     type: 'default', // SQL Server Authentication
     options: {
-      userName: process.env.AZURE_SQL_USERNAME || 'sqladmin@sql-documentapi',
-      password: process.env.AZURE_SQL_PASSWORD || 'BaVeBoSs123@', // IMPORTANT: Use environment variable for production
+      userName: process.env.AZURE_SQL_USERNAME || '',
+      password: process.env.AZURE_SQL_PASSWORD || '',
     },
   },
   options: {
@@ -16,5 +16,11 @@ export const sqlConfig: config = { // Use config type
     connectTimeout: 120000, // 120 seconds
     requestTimeout: 120000, // 120 seconds
     // You can add other options here like requestTimeout, connectTimeout, etc.
+  },
+  pool: {
+    max: 10, // Maximum number of connections in the pool
+    min: 0, // Minimum number of connections in the pool
+    idleTimeoutMillis: 30000, // Remove connections after 30 seconds of inactivity
+    acquireTimeoutMillis: 30000, // Try to acquire a connection for 30 seconds before timing out
   },
 };

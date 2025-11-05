@@ -5,6 +5,7 @@ export interface Document {
   category: string;
   description: string;
   filePath: string;
+  username?: string; // Added username property
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,6 +19,7 @@ export interface User {
   birthDate?: Date;
   email?: string;
   tel?: string;
+  role?: string; // Added role property
   createdAt?: Date;
   updatedAt?: Date; // Added
 }

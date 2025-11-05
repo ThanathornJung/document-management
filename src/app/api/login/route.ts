@@ -6,7 +6,10 @@ import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 import { LogRepository } from '@/lib/repositories/LogRepository';
 import { UserRepository } from '@/lib/repositories/UserRepository';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use environment variable in production
+const JWT_SECRET: string = process.env.JWT_SECRET as string;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set.');
+}
 
 export async function POST(request: Request) {
   let requestBody;
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
     const user = await userRepository.getUserByUsername(username);
 
     if (user && user.password && await bcrypt.compare(password, user.password)) {
-      const tokenPayload = { id: user.id, username: user.username };
+      const tokenPayload = { id: user.id, username: user.username, role: user.role };
       const expiresIn = rememberMe ? '7d' : '1h'; // 7 days if rememberMe, 1 hour otherwise
       const maxAge = rememberMe ? 60 * 60 * 24 * 7 : 60 * 60; // 7 days in seconds if rememberMe, 1 hour otherwise
 
@@ -47,10 +50,10 @@ export async function POST(request: Request) {
         maxAge: maxAge,
         path: '/',
       });
-      console.log('Login API: Cookie serialized');
+      
 
       const response = NextResponse.json(
-        { message: 'Login successful', user: { id: user.id, username: user.username, firstName: user.firstName, lastName: user.lastName, birthDate: user.birthDate, email: user.email, tel: user.tel } },
+        { message: 'Login successful', user: { id: user.id, username: user.username, firstName: user.firstName, lastName: user.lastName, birthDate: user.birthDate, email: user.email, tel: user.tel, role: user.role } },
         { status: 200 }
       );
 

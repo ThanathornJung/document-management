@@ -43,7 +43,7 @@ export default function Login() {
       }
 
       if (response.ok) {
-        login({ id: data.user.id, username: data.user.username }, rememberMe);
+        login({ id: data.user.id, username: data.user.username, role: data.user.role }, rememberMe);
         setMessage(data.message || 'Login successful!');
         setIsSuccessMessage(true);
         router.push('/');

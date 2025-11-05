@@ -9,28 +9,37 @@ export class DocumentRepository {
     this.dbContext = dbContext;
   }
 
-  async getDocuments(userId: number, page: number = 1, pageSize: number = 10, sortBy: string = 'id', sortOrder: 'ASC' | 'DESC' = 'ASC'): Promise<Document[]> {
+  async getDocuments(userId: number | undefined, page: number = 1, pageSize: number = 10, sortBy: string = 'id', sortOrder: 'ASC' | 'DESC' = 'ASC'): Promise<Document[]> {
     const request = await this.dbContext.createRequest();
     const offset = (page - 1) * pageSize;
+    
+    let query = `
+      SELECT 
+        id, 
+        title, 
+        category, 
+        description, 
+        filePath, 
+        createdAt, 
+        updatedAt
+      FROM Documents
+    `;
+    
+    if (userId !== undefined) {
+      query += ` WHERE userId = @userId`;
+      request.input('userId', sql.Int, userId);
+    }
+
+    query += `
+      ORDER BY ${sortBy} ${sortOrder}
+      OFFSET @offset ROWS
+      FETCH NEXT @pageSize ROWS ONLY
+    `;
+
     const result = await request
-      .input('userId', sql.Int, userId)
       .input('offset', sql.Int, offset)
       .input('pageSize', sql.Int, pageSize)
-      .query(`
-        SELECT 
-          id, 
-          title, 
-          category, 
-          description, 
-          filePath, 
-          createdAt, 
-          updatedAt
-        FROM Documents
-        WHERE userId = @userId
-        ORDER BY ${sortBy} ${sortOrder}
-        OFFSET @offset ROWS
-        FETCH NEXT @pageSize ROWS ONLY
-      `);
+      .query(query);
     return result.recordset as Document[];
   }
 

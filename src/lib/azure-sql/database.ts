@@ -30,7 +30,9 @@ export class AzureSqlDatabaseContext { // Added comment to force reload
 
     for (let i = 0; i < maxRetries; i++) {
       try {
+        
         this.pool = await sql.connect(sqlConfig);
+        
         return; // Success, exit the loop
       } catch (err: unknown) {
         console.error(`Attempt ${i + 1} of ${maxRetries}: Failed to create Azure SQL Connection Pool.`);
@@ -46,7 +48,7 @@ export class AzureSqlDatabaseContext { // Added comment to force reload
         console.error(`Full Error: ${err}`);
 
         if (i < maxRetries - 1) {
-          console.log(`Retrying in ${retryDelay / 1000} seconds...`);
+          
           await new Promise(res => setTimeout(res, retryDelay));
         } else {
           console.error("All connection attempts failed.");

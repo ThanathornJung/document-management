@@ -1,26 +1,25 @@
 'use client';
 import { useState, useEffect, Suspense, lazy } from 'react';
-import Link from 'next/link';
-import PageWrapper from '../../components/PageWrapper';
-import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import ConfirmationModal from '../../components/ConfirmationModal';
-import SkeletonCard from '../../components/SkeletonCard'; // Import SkeletonCard
-import { Document } from '../../lib/db'; // Import shared Document interface
+import { useAuth } from '../../../context/AuthContext';
+import PageWrapper from '../../../components/PageWrapper';
+import Swal from 'sweetalert2';
+import ConfirmationModal from '../../../components/ConfirmationModal';
+import { Document } from '../../../lib/db'; // Import shared Document interface
 
-const LazyDocumentList = lazy(() => import('../../components/DocumentList'));
-const EditDocumentModal = lazy(() => import('../../components/EditDocumentModal'));
-const DocumentPreviewModal = lazy(() => import('../../components/DocumentPreviewModal'));
+const LazyDocumentList = lazy(() => import('../../../components/DocumentList'));
+const EditDocumentModal = lazy(() => import('../../../components/EditDocumentModal'));
+const DocumentPreviewModal = lazy(() => import('../../../components/DocumentPreviewModal'));
 
-export default function DocumentsPage() {
-  const { isLoggedIn } = useAuth();
+export default function AdminDocumentsPage() {
+  const { user, isLoggedIn } = useAuth();
   const router = useRouter();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Default to list view for admin
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -38,10 +37,31 @@ export default function DocumentsPage() {
     "Other",
   ];
 
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+    if (user?.role !== 'admin') {
+      Swal.fire({
+        title: 'Unauthorized',
+        text: 'You do not have permission to view this page.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        router.push('/');
+      });
+      return;
+    }
+
+    fetchDocuments();
+  }, [isLoggedIn, user, router, selectedCategory, searchTerm]);
+
   const fetchDocuments = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      const response = await fetch('/api/documents');
+      const response = await fetch('/api/documents?all=true'); // Fetch all documents for admin
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch documents');
@@ -51,18 +71,16 @@ export default function DocumentsPage() {
     } catch (err) {
       console.error('Error fetching documents:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred while fetching documents.');
+      Swal.fire({
+        title: 'Error',
+        text: err instanceof Error ? err.message : 'An unknown error occurred while fetching documents.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      router.push('/login');
-      return;
-    }
-    fetchDocuments();
-  }, [isLoggedIn, router]);
 
   useEffect(() => {
     let currentDocuments = documents;
@@ -74,7 +92,8 @@ export default function DocumentsPage() {
     if (searchTerm) {
       currentDocuments = currentDocuments.filter(doc => 
         doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.description.toLowerCase().includes(searchTerm.toLowerCase())
+        doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (doc.username && doc.username.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -174,13 +193,13 @@ export default function DocumentsPage() {
     setIsPreviewModalOpen(false);
   };
 
-  if (!isLoggedIn) {
-    return null;
+  if (!isLoggedIn || user?.role !== 'admin') {
+    return null; // Render nothing while redirecting or showing alert
   }
 
   return (
     <PageWrapper>
-      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-8 text-center text-gray-800">My Documents</h1>
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-8 text-center text-gray-800">Manage All Documents</h1>
 
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="w-full sm:w-auto">
@@ -201,9 +220,6 @@ export default function DocumentsPage() {
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
             </button>
           </div>
-          <Link href="/documents/upload" className="bg-blue-600 text-white py-2 px-4 shadow-lg hover:bg-blue-700 transition-colors rounded-lg flex items-center whitespace-nowrap justify-center">
-            + Upload
-          </Link>
         </div>
       </div>
 
@@ -222,13 +238,9 @@ export default function DocumentsPage() {
       </div>
 
       {error ? (
-        <div className="text-center text-red-500 text-xl">{error}</div>
+        <div className="text-center text-red-500 text-xl">Error: {error}</div>
       ) : loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, index) => (
-            <SkeletonCard key={index} />
-          ))}
-        </div>
+        <div className="text-center text-gray-800 text-xl font-semibold">Loading documents...</div>
       ) : (
         <Suspense fallback={<div>Loading documents...</div>}>
           <LazyDocumentList

@@ -3,14 +3,7 @@
 import Link from "next/link";
 import { memo } from 'react';
 import Image from 'next/image'; // Import Image component
-
-interface Document {
-  id: number;
-  title: string;
-  category: string;
-  description: string;
-  filePath: string;
-}
+import { Document } from '@/lib/db'; // Import shared Document interface
 
 interface DocumentListProps {
   documents: Document[];

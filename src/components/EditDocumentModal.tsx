@@ -1,14 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-
-interface Document {
-  id: number;
-  title: string;
-  category: string;
-  description: string;
-  filePath: string;
-}
+import { Document } from '@/lib/db'; // Import shared Document interface
 
 interface EditDocumentModalProps {
   isOpen: boolean;

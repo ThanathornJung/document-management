@@ -63,6 +63,7 @@ export async function POST(request: Request) {
       tel,
       username,
       password: hashedPassword,
+      role: 'user', // Assign default role
     });
 
     await logRepository.addLogEntry({
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
     });
 
-    return NextResponse.json({ message: 'User registered successfully', user: { id: newUser.id, username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, birthDate: newUser.birthDate, email: newUser.email, tel: newUser.tel } }, { status: 201 });
+    return NextResponse.json({ message: 'User registered successfully', user: { id: newUser.id, username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, birthDate: newUser.birthDate, email: newUser.email, tel: newUser.tel, role: newUser.role } }, { status: 201 });
   } catch (error) {
     console.error('Error during registration:', error);
     if (dbContext) {
