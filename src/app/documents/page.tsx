@@ -5,6 +5,7 @@ import PageWrapper from '../../components/PageWrapper';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import SkeletonCard from '../../components/SkeletonCard'; // Import SkeletonCard
 
 interface Document {
   id: number;
@@ -230,7 +231,11 @@ export default function DocumentsPage() {
       {error ? (
         <div className="text-center text-red-500 text-xl">{error}</div>
       ) : loading ? (
-        <div className="text-center text-gray-800 text-xl font-semibold">Loading documents...</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(viewMode === 'grid' ? 6 : 3)].map((_, index) => (
+            <SkeletonCard key={index} />
+          ))}
+        </div>
       ) : (
         <Suspense fallback={<div>Loading documents...</div>}>
           <LazyDocumentList

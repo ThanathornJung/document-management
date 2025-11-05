@@ -70,7 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    console.log("Attempting to log out user:", user?.username);
     if (user) {
       try {
         const response = await fetch('/api/logout', {
@@ -90,8 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             icon: 'error',
             confirmButtonText: 'OK'
           });
-        } else {
-          console.log("Logout API call successful.");
         }
       } catch (error) {
         console.error('Error during logout fetch:', error);

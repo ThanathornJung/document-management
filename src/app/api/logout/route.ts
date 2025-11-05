@@ -4,7 +4,6 @@ import { LogRepository } from '@/lib/repositories/LogRepository';
 import { serialize } from 'cookie';
 
 export async function POST(request: Request) {
-  console.log('Logout API endpoint hit');
   let requestBody;
   let dbContext;
   try {

@@ -52,7 +52,6 @@ export async function GET(request: NextRequest) {
       updatedAt: userWithoutPassword.updatedAt ? new Date(userWithoutPassword.updatedAt).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }) : undefined,
     };
 
-    console.log("Backend GET /api/users/[id] response:", responseUser);
     return NextResponse.json(responseUser, { status: 200 });
   } catch (error) {
     console.error('Error fetching user:', error);
@@ -107,7 +106,6 @@ export async function PUT(request: NextRequest) {
       updatedAt: updatedUser.updatedAt ? new Date(updatedUser.updatedAt).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }) : undefined,
     };
 
-    console.log("Backend PUT /api/users/[id] response:", responseUser);
     await logRepository.addLogEntry({
       username: await getUsernameFromToken(),
       method: 'PUT',

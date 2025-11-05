@@ -15,10 +15,8 @@ export async function POST(request: Request) {
     dbContext = await AzureSqlDatabaseContext.getInstance();
     const logRepository = new LogRepository(dbContext);
     const userRepository = new UserRepository(dbContext);
-    console.log('Login API: Request received');
     requestBody = await request.json();
     const { username, password, rememberMe } = requestBody;
-    console.log('Login API: Parsed request body');
 
     if (!username || !password) {
       await logRepository.addLogEntry({
@@ -34,16 +32,13 @@ export async function POST(request: Request) {
 
     // Find user by username
     const user = await userRepository.getUserByUsername(username);
-    console.log('Login API: User fetched:', user ? user.username : 'not found');
 
     if (user && user.password && await bcrypt.compare(password, user.password)) {
-      console.log('Login API: Password matched');
       const tokenPayload = { id: user.id, username: user.username };
       const expiresIn = rememberMe ? '7d' : '1h'; // 7 days if rememberMe, 1 hour otherwise
       const maxAge = rememberMe ? 60 * 60 * 24 * 7 : 60 * 60; // 7 days in seconds if rememberMe, 1 hour otherwise
 
       const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn });
-      console.log('Login API: JWT signed');
 
       const serializedCookie = serialize('token', token, {
         httpOnly: true,
@@ -60,7 +55,6 @@ export async function POST(request: Request) {
       );
 
       response.headers.set('Set-Cookie', serializedCookie);
-      console.log('Login API: Login successful response sent');
       await logRepository.addLogEntry({
         username: user.username,
         action: 'LOGIN',
@@ -73,7 +67,6 @@ export async function POST(request: Request) {
       return response;
 
     } else {
-      console.log('Login API: Invalid username or password');
       await logRepository.addLogEntry({
         username: username,
         action: 'LOGIN',

@@ -195,7 +195,6 @@ export async function PUT(request: Request) {
     let title = existingDocument.title;
 
     if (file) {
-      console.log('File found, processing file upload');
       // Delete old file
       if (existingDocument.filePath) {
         const oldFilePath = join(process.cwd(), 'public', existingDocument.filePath);
@@ -214,13 +213,23 @@ export async function PUT(request: Request) {
       await writeFile(newFilePath, buffer);
       filePath = `/uploads/${filename}`;
       title = newFileName || file.name;
-      console.log('New file path:', filePath);
     } else if (newFileName && newFileName !== existingDocument.title) {
       title = newFileName;
     }
 
-    console.log('Updating document with:', { id, category, description, filePath, title });
     const updatedDocument = await documentRepository.updateDocument(id, { category, description, filePath, title });
+
+    if (dbContext) {
+      const logRepository = new LogRepository(dbContext);
+      await logRepository.addLogEntry({
+        username: await getUsernameFromToken(),
+        method: 'PUT',
+        action: 'Update Document',
+        result: 'Success',
+        details: `Document ID: ${id}, Updated Data: ${JSON.stringify({ category, description, filePath, title })}`,
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+      });
+    }
 
     return NextResponse.json({ message: 'Document updated successfully', document: {
       ...updatedDocument,

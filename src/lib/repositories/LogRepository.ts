@@ -34,7 +34,6 @@ export class LogRepository {
         VALUES (@username, @method, @action, @result, @details, @ipAddress, @timestamp);
       `;
       await request.query(insertLogSql);
-      console.log('Log entry added successfully.');
     } catch (err) {
       console.error('Failed to add log entry:', err);
       // Depending on requirements, you might want to re-throw or handle this more gracefully
