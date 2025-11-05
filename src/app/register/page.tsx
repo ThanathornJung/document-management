@@ -1,11 +1,14 @@
 'use client';
 import { useState, Suspense, lazy } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import Swal from 'sweetalert2'; // Import SweetAlert2
 import PageWrapper from '../../components/PageWrapper';
 import ConsentModal from '../../components/ConsentModal'; // Import ConsentModal
 
 const LazyRegisterForm = lazy(() => import('../../components/RegisterForm'));
 
 export default function Register() {
+  const router = useRouter(); // Initialize router
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -75,10 +78,14 @@ export default function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message || 'Registration successful!');
-        setIsSuccessMessage(true);
-        // Optionally redirect to login page
-        // router.push('/login');
+        Swal.fire({
+          title: 'Success!',
+          text: data.message || 'Registration successful!',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/login');
+        });
       } else {
         setMessage(data.message || 'Registration failed.');
         setIsSuccessMessage(false);

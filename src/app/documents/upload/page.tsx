@@ -12,7 +12,7 @@ export default function UploadDocumentPage() {
 
   return (
     <PageWrapper>
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold leading-tight mb-12 text-center text-gray-800">Upload Document</h1>
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-12 text-center text-gray-800">Upload Document</h1>
       <DynamicDocumentUploadForm />
     </PageWrapper>
   );

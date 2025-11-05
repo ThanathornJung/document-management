@@ -7,13 +7,14 @@ import { LogRepository } from '@/lib/repositories/LogRepository';
 import { UserRepository } from '@/lib/repositories/UserRepository';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use environment variable in production
-const dbContext = AzureSqlDatabaseContext.getInstance();
-const logRepository = new LogRepository(dbContext);
-const userRepository = new UserRepository(dbContext);
 
 export async function POST(request: Request) {
   let requestBody;
+  let dbContext;
   try {
+    dbContext = await AzureSqlDatabaseContext.getInstance();
+    const logRepository = new LogRepository(dbContext);
+    const userRepository = new UserRepository(dbContext);
     console.log('Login API: Request received');
     requestBody = await request.json();
     const { username, password, rememberMe } = requestBody;
@@ -85,17 +86,20 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error('Login API: Error during login:', error);
-    try {
-      await logRepository.addLogEntry({
-        username: requestBody?.username || 'N/A',
-        action: 'LOGIN',
-        details: 'Error during login',
-        result: 'FAILURE',
-        method: 'POST',
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
-      });
-    } catch (logError) {
-      console.error('Login API: Error logging failed login attempt:', logError);
+    if (dbContext) {
+        try {
+          const logRepository = new LogRepository(dbContext);
+          await logRepository.addLogEntry({
+            username: requestBody?.username || 'N/A',
+            action: 'LOGIN',
+            details: 'Error during login',
+            result: 'FAILURE',
+            method: 'POST',
+            ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+          });
+        } catch (logError) {
+          console.error('Login API: Error logging failed login attempt:', logError);
+        }
     }
     return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined }, { status: 500 });
   }

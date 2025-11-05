@@ -2,56 +2,56 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 import { UserRepository } from '@/lib/repositories/UserRepository';
-
-const dbContext = AzureSqlDatabaseContext.getInstance();
-const userRepository = new UserRepository(dbContext);
-
-// async function checkPwnedPassword(password: string): Promise<boolean> {
-//   const sha1Hash = sha1(password).toUpperCase();
-//   const prefix = sha1Hash.substring(0, 5);
-//   const suffix = sha1Hash.substring(5);
-//
-//   const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
-//   if (!response.ok) {
-//     console.error(`HIBP API error: ${response.status} ${response.statusText}`);
-//     return false;
-//   }
-//
-//   const text = await response.text();
-//   const pwnedHashes = text.split('\n').map(line => line.trim().split(':'));
-//
-//   for (const [hashSuffix, count] of pwnedHashes) {
-//     if (hashSuffix === suffix) {
-//       console.warn(`Password found in data breach with ${count} occurrences.`);
-//       return true;
-//     }
-//   }
-//   return false;
-// }
+import { LogRepository } from '@/lib/repositories/LogRepository';
 
 export async function POST(request: Request) {
+  let requestBody;
+  let dbContext;
   try {
-    const { firstName, lastName, birthDate, email, tel, username, password } = await request.json();
+    dbContext = await AzureSqlDatabaseContext.getInstance();
+    const userRepository = new UserRepository(dbContext);
+    const logRepository = new LogRepository(dbContext);
+    requestBody = await request.json();
+    const { firstName, lastName, birthDate, email, tel, username, password } = requestBody;
 
     // Basic validation
     if (!username || !password || !email || !firstName || !lastName) {
+      await logRepository.addLogEntry({
+        username: username || 'N/A',
+        action: 'REGISTER',
+        details: 'Attempted registration with missing fields',
+        result: 'FAILURE',
+        method: 'POST',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+      });
       return NextResponse.json({ message: 'Missing required fields: username, password, email, firstName, lastName' }, { status: 400 });
     }
 
     // Check if username or email already exists
     const existingUserByUsername = await userRepository.getUserByUsername(username);
     if (existingUserByUsername) {
+      await logRepository.addLogEntry({
+        username: username,
+        action: 'REGISTER',
+        details: 'Attempted registration with existing username',
+        result: 'FAILURE',
+        method: 'POST',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+      });
       return NextResponse.json({ message: 'Username already exists' }, { status: 409 });
     }
     const existingUserByEmail = await userRepository.getUserByEmail(email);
     if (existingUserByEmail) {
+      await logRepository.addLogEntry({
+        username: username,
+        action: 'REGISTER',
+        details: 'Attempted registration with existing email',
+        result: 'FAILURE',
+        method: 'POST',
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+      });
       return NextResponse.json({ message: 'Email already exists' }, { status: 409 });
     }
-
-    // Check if password has been pwned
-    // if (await checkPwnedPassword(password)) {
-    //   return NextResponse.json({ message: 'The password you just used was found in a data breach. Please choose a different password.' }, { status: 400 });
-    // }
 
     // Create new user
     const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
@@ -65,9 +65,29 @@ export async function POST(request: Request) {
       password: hashedPassword,
     });
 
+    await logRepository.addLogEntry({
+      username: newUser.username,
+      action: 'REGISTER',
+      details: 'User registered successfully',
+      result: 'SUCCESS',
+      method: 'POST',
+      ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+    });
+
     return NextResponse.json({ message: 'User registered successfully', user: { id: newUser.id, username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, birthDate: newUser.birthDate, email: newUser.email, tel: newUser.tel } }, { status: 201 });
   } catch (error) {
     console.error('Error during registration:', error);
+    if (dbContext) {
+        const logRepository = new LogRepository(dbContext);
+        await logRepository.addLogEntry({
+            username: requestBody?.username || 'N/A',
+            action: 'REGISTER',
+            details: 'Error during registration',
+            result: 'FAILURE',
+            method: 'POST',
+            ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'N/A',
+          });
+    }
     return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

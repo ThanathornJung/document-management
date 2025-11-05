@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 
 export async function GET() {
-  const db = AzureSqlDatabaseContext.getInstance();
+  const db = await AzureSqlDatabaseContext.getInstance();
   try {
     console.log("Attempting to alter 'Users' table...");
 

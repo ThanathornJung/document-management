@@ -81,144 +81,133 @@ export default function RegisterForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="mb-4">
-        <label htmlFor="firstName" className="block text-gray-700 font-semibold mb-2">First Name</label>
-        <input
-          type="text"
-          id="firstName"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="lastName" className="block text-gray-700 font-semibold mb-2">Last Name</label>
-        <input
-          type="text"
-          id="lastName"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="birthDate" className="block text-gray-700 font-semibold mb-2">Birth Date</label>
-        <input
-          type="date"
-          id="birthDate"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={birthDate}
-          onChange={(e) => setBirthDate(e.target.value)}
-          max="9999-12-31"
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">Email</label>
-        <input
-          type="email"
-          id="email"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="tel" className="block text-gray-700 font-semibold mb-2">Telephone</label>
-        <div className="flex">
-          <select
-            id="countryCode"
-            className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
-            value={countryCode}
-            onChange={(e) => setCountryCode(e.target.value)}
-          >
-            <option value="+66">+66 (TH)</option>
-            <option value="+1">+1 (US)</option>
-            <option value="+44">+44 (UK)</option>
-            <option value="+91">+91 (IN)</option>
-            <option value="+61">+61 (AU)</option>
-            <option value="+86">+86 (CN)</option>
-            <option value="+81">+81 (JP)</option>
-            <option value="+49">+49 (DE)</option>
-            <option value="+33">+33 (FR)</option>
-            <option value="+39">+39 (IT)</option>
-            <option value="+34">+34 (ES)</option>
-            <option value="+7">+7 (RU)</option>
-            <option value="+55">+55 (BR)</option>
-            <option value="+52">+52 (MX)</option>
-            <option value="+27">+27 (ZA)</option>
-            {/* Add more country codes as needed */}
-          </select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        <div className="md:col-span-1">
+          <label htmlFor="firstName" className="block text-gray-700 font-semibold mb-2">First Name</label>
           <input
-            type="tel"
-            id="tel"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={tel}
-            onChange={(e) => setTel(e.target.value.replace(/\D/g, ''))} // Filter non-digits
-            pattern="[0-9]*" // Allow only digits
-            inputMode="numeric" // Hint for numeric keyboard on mobile
+            type="text"
+            id="firstName"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="md:col-span-1">
+          <label htmlFor="lastName" className="block text-gray-700 font-semibold mb-2">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="birthDate" className="block text-gray-700 font-semibold mb-2">Birth Date</label>
+          <input
+            type="date"
+            id="birthDate"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            max="9999-12-31"
+            required
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">Email</label>
+          <input
+            type="email"
+            id="email"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="tel" className="block text-gray-700 font-semibold mb-2">Telephone</label>
+          <div className="flex flex-col sm:flex-row">
+            <select
+              id="countryCode"
+              className="px-4 py-3 border border-gray-300 rounded-lg sm:rounded-r-none bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 sm:mb-0 sm:mr-0"
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+            >
+              <option value="+66">+66 (TH)</option>
+              <option value="+1">+1 (US)</option>
+              {/* Add more country codes as needed */}
+            </select>
+            <input
+              type="tel"
+              id="tel"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg sm:rounded-l-none bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={tel}
+              onChange={(e) => setTel(e.target.value.replace(/\D/g, ''))} // Filter non-digits
+              pattern="[0-9]*"
+              inputMode="numeric"
+              required
+            />
+          </div>
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="username" className="block text-gray-700 font-semibold mb-2">Username</label>
+          <input
+            type="text"
+            id="username"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">Password</label>
+          <input
+            type="password"
+            id="password"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={password}
+            onChange={handlePasswordChange}
+            required
+          />
+          <PasswordStrength
+            passwordStrength={passwordStrength}
+            hasMinLength={hasMinLength}
+            hasUpperCase={hasUpperCase}
+            hasLowerCase={hasLowerCase}
+            hasSymbol={hasSymbol}
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="confirmPassword" className="block text-gray-700 font-semibold mb-2">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
         </div>
       </div>
-      <div className="mb-4">
-        <label htmlFor="username" className="block text-gray-700 font-semibold mb-2">Username</label>
-        <input
-          type="text"
-          id="username"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">Password</label>
-        <input
-          type="password"
-          id="password"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={password}
-          onChange={handlePasswordChange} // Call new handler
-          required
-        />
-        <PasswordStrength
-          passwordStrength={passwordStrength}
-          hasMinLength={hasMinLength}
-          hasUpperCase={hasUpperCase}
-          hasLowerCase={hasLowerCase}
-          hasSymbol={hasSymbol}
-        />
-      </div>
-      <div className="mb-6">
-        <label htmlFor="confirmPassword" className="block text-gray-700 font-semibold mb-2">Confirm Password</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-      </div>
-      <div className="mb-6 flex items-center">
+      <div className="mt-6 mb-6 flex items-center">
         <input
           type="checkbox"
           id="acceptedConsent"
           className="form-checkbox h-5 w-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
           checked={acceptedConsent}
-          disabled={!acceptedConsent} // Disable checkbox until accepted via modal
-          onClick={handleOpenModal} // Open modal on click
+          disabled={!acceptedConsent}
+          onClick={handleOpenModal}
           required
         />
-        <label htmlFor="acceptedConsent" className="ml-2 text-gray-800 font-semibold cursor-pointer" onClick={handleOpenModal}>I accept the terms and conditions</label>
+        <label htmlFor="acceptedConsent" className="ml-3 text-gray-800 font-semibold cursor-pointer" onClick={handleOpenModal}>I accept the terms and conditions</label>
       </div>
       <button
         type="submit"
-        className="bg-blue-600 text-white py-3 px-8 shadow-lg hover:bg-blue-700 transition-colors w-full"
+        className="bg-blue-600 text-white py-3 px-8 shadow-lg hover:bg-blue-700 transition-colors w-full rounded-lg text-lg font-semibold"
       >
         Register
       </button>

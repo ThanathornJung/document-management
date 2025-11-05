@@ -3,10 +3,9 @@ import bcrypt from 'bcrypt';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 import { UserRepository } from '@/lib/repositories/UserRepository';
 
-const dbContext = AzureSqlDatabaseContext.getInstance();
-const userRepository = new UserRepository(dbContext);
-
 export async function PUT(request: NextRequest) {
+  const dbContext = await AzureSqlDatabaseContext.getInstance();
+  const userRepository = new UserRepository(dbContext);
   try {
     const pathname = request.nextUrl.pathname;
     const id = pathname.split('/')[3]; // /api/users/[id]/change-password

@@ -9,10 +9,11 @@ export class DocumentRepository {
     this.dbContext = dbContext;
   }
 
-  async getDocuments(page: number = 1, pageSize: number = 10, sortBy: string = 'id', sortOrder: 'ASC' | 'DESC' = 'ASC'): Promise<Document[]> {
+  async getDocuments(userId: number, page: number = 1, pageSize: number = 10, sortBy: string = 'id', sortOrder: 'ASC' | 'DESC' = 'ASC'): Promise<Document[]> {
     const request = await this.dbContext.createRequest();
     const offset = (page - 1) * pageSize;
     const result = await request
+      .input('userId', sql.Int, userId)
       .input('offset', sql.Int, offset)
       .input('pageSize', sql.Int, pageSize)
       .query(`
@@ -25,6 +26,7 @@ export class DocumentRepository {
           createdAt, 
           updatedAt
         FROM Documents
+        WHERE userId = @userId
         ORDER BY ${sortBy} ${sortOrder}
         OFFSET @offset ROWS
         FETCH NEXT @pageSize ROWS ONLY
@@ -50,15 +52,16 @@ export class DocumentRepository {
     return result.recordset[0] as Document | undefined;
   }
 
-  async createDocument(document: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'content'>): Promise<Document> {
+  async createDocument(document: Omit<Document, 'id' | 'createdAt' | 'updatedAt' | 'content'> & { userId: number }): Promise<Document> {
     const request = await this.dbContext.createRequest();
     request.input('title', sql.NVarChar, document.title);
     request.input('category', sql.NVarChar, document.category);
     request.input('description', sql.NVarChar, document.description);
     request.input('filePath', sql.NVarChar, document.filePath);
+    request.input('userId', sql.Int, document.userId);
 
     const result = await request.query(`
-      INSERT INTO Documents (title, category, description, filePath)
+      INSERT INTO Documents (title, category, description, filePath, userId)
       OUTPUT 
         INSERTED.id, 
         INSERTED.title, 
@@ -67,7 +70,7 @@ export class DocumentRepository {
         INSERTED.filePath, 
         INSERTED.createdAt, 
         INSERTED.updatedAt
-      VALUES (@title, @category, @description, @filePath)
+      VALUES (@title, @category, @description, @filePath, @userId)
     `);
     return result.recordset[0] as Document;
   }

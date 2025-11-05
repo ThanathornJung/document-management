@@ -3,7 +3,7 @@ import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 
 export async function POST() {
   try {
-    const dbContext = AzureSqlDatabaseContext.getInstance();
+    const dbContext = await AzureSqlDatabaseContext.getInstance();
     await dbContext.createLogTable();
     return NextResponse.json({ message: 'Log table created successfully.' }, { status: 200 });
   } catch (error) {

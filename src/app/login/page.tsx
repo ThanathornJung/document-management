@@ -60,15 +60,15 @@ export default function Login() {
 
   return (
     <PageWrapper>
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold leading-tight mb-8 text-center text-gray-800">Login</h1>
-      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg max-w-lg mx-auto">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-8 text-center text-gray-800">Login</h1>
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg max-w-md mx-auto">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="username" className="block text-gray-700 font-semibold mb-2">Username</label>
             <input
               type="text"
               id="username"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -79,7 +79,7 @@ export default function Login() {
             <input
               type={showPassword ? 'text' : 'password'} // Toggle type based on showPassword state
               id="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -93,7 +93,7 @@ export default function Login() {
               checked={showPassword}
               onChange={(e) => setShowPassword(e.target.checked)}
             />
-            <label htmlFor="showPassword" className="ml-2 text-gray-800 font-semibold">Show Password</label>
+            <label htmlFor="showPassword" className="ml-3 text-gray-800 font-semibold">Show Password</label>
           </div>
           <div className="mb-6 flex items-center">
             <input
@@ -103,11 +103,11 @@ export default function Login() {
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
             />
-            <label htmlFor="rememberMe" className="ml-2 text-gray-800 font-semibold">Remember Me</label>
+            <label htmlFor="rememberMe" className="ml-3 text-gray-800 font-semibold">Remember Me</label>
           </div>
           <button
             type="submit"
-            className="bg-blue-600 text-white py-3 px-8 shadow-lg hover:bg-blue-700 transition-colors w-full"
+            className="bg-blue-600 text-white py-3 px-8 shadow-lg hover:bg-blue-700 transition-colors w-full rounded-lg text-lg font-semibold"
           >
             Login
           </button>

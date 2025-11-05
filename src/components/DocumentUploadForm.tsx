@@ -1,7 +1,7 @@
-'use client';
 import React, { useState, DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image'; // Import Image component
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 const categories = [
   "Citizen ID",
@@ -22,15 +22,11 @@ export default function DocumentUploadForm() {
   const [description, setDescription] = useState<string>('');
   const [fileName, setFileName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const router = useRouter();
 
   const handleFile = (selectedFile: File | null) => {
     setFile(selectedFile);
-    setSuccess(null);
-    setError(null);
 
     if (preview) {
       URL.revokeObjectURL(preview);
@@ -72,13 +68,16 @@ export default function DocumentUploadForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      alert('Please select a file to upload.');
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please select a file to upload.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
       return;
     }
 
     setLoading(true);
-    setError(null);
-    setSuccess(null);
 
     const formData = new FormData();
     formData.append('file', file);
@@ -98,14 +97,22 @@ export default function DocumentUploadForm() {
         throw new Error(result.message || 'Failed to upload document');
       }
 
-      setSuccess('Document uploaded successfully!');
-      setFile(null);
-      setPreview(null);
-      setCategory(categories[0]);
-      setDescription('');
+      Swal.fire({
+        title: 'Success!',
+        text: 'Document uploaded successfully!',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        router.push('/documents');
+      });
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      Swal.fire({
+        title: 'Error!',
+        text: err instanceof Error ? err.message : 'An unknown error occurred',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setLoading(false);
     }
@@ -114,19 +121,6 @@ export default function DocumentUploadForm() {
   return (
     <div className="bg-white p-8 rounded-xl shadow-lg max-w-3xl mx-auto border border-gray-200">
       <form onSubmit={handleSubmit}>
-        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
-          {error}
-          <button onClick={() => setError(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
-            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
-          </button>
-        </div>}
-        {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
-          {success}
-          <button onClick={() => setSuccess(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
-            <svg className="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
-          </button>
-        </div>}
-
         <div 
           className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors duration-300 ${
             isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50'

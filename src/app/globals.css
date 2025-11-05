@@ -1,14 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: #f3f4f6; /* Light gray background */
-  color: #111827; /* Dark text color */
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6; /* Light gray background */
+    color: #111827; /* Dark text color */
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+  }
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Inter', sans-serif;
+@layer components {
+  /* Responsive table styles */
+  .responsive-table {
+    @apply w-full;
+  }
+  .responsive-table thead {
+    @apply hidden md:table-header-group;
+  }
+  .responsive-table tbody tr {
+    @apply block border-b border-gray-200 mb-4 md:table-row md:border-none md:mb-0;
+  }
+  .responsive-table tbody td {
+    @apply block text-right p-4 md:table-cell md:text-left md:p-4;
+  }
+  .responsive-table tbody td:before {
+    content: attr(data-label);
+    @apply float-left font-semibold md:hidden;
+  }
 }
 
 /* Custom scrollbar styles for ConsentModal */

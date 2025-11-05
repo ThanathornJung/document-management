@@ -1,20 +1,70 @@
 import { NextResponse } from 'next/server';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 import { DocumentRepository } from '@/lib/repositories/DocumentRepository';
-import { writeFile } from 'fs/promises';
+import { LogRepository } from '@/lib/repositories/LogRepository';
+import { writeFile, unlink } from 'fs/promises';
 import { join } from 'path';
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'; // Use environment variable in production
+
+interface JwtPayload {
+  id: number;
+  username: string;
+}
+
+// Helper function to get user ID from JWT token
+async function getUserIdFromToken(): Promise<number | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
+  if (token) {
+    try {
+      const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
+      return decodedToken.id;
+    } catch (error) {
+      console.error('Error decoding JWT token:', error);
+      return null;
+    }
+  }
+  return null;
+}
+
+// Helper function to get username from JWT token
+async function getUsernameFromToken(): Promise<string> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
+  if (token) {
+    try {
+      const decodedToken = jwt.verify(token, JWT_SECRET) as JwtPayload;
+      return decodedToken.username || 'system';
+    } catch (error) {
+      console.error('Error decoding JWT token:', error);
+    }
+  }
+  return 'system';
+}
 
 export async function GET(request: Request) {
-  const dbContext = AzureSqlDatabaseContext.getInstance();
-  const documentRepository = new DocumentRepository(dbContext);
+  let dbContext;
   try {
+    dbContext = await AzureSqlDatabaseContext.getInstance();
+    const documentRepository = new DocumentRepository(dbContext);
+    const userId = await getUserIdFromToken();
+
+    if (!userId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     const sortBy = searchParams.get('sortBy') || 'id';
     const sortOrder = (searchParams.get('sortOrder') as 'ASC' | 'DESC') || 'ASC';
 
-    const documents = await documentRepository.getDocuments(page, pageSize, sortBy, sortOrder);
+    const documents = await documentRepository.getDocuments(userId, page, pageSize, sortBy, sortOrder);
     
     // Format dates for the response
     const formattedDocuments = documents.map(doc => ({
@@ -26,6 +76,17 @@ export async function GET(request: Request) {
     return NextResponse.json(formattedDocuments);
   } catch (error) {
     console.error('Error in GET /api/documents:', error);
+    if (dbContext) {
+      const logRepository = new LogRepository(dbContext);
+      await logRepository.addLogEntry({
+        username: await getUsernameFromToken(), // Use username from token
+        method: 'GET',
+        action: 'Fetch Documents',
+        result: 'Failure',
+        details: `Error fetching documents. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+      });
+    }
     return NextResponse.json(
       { message: 'Failed to fetch documents', error: error instanceof Error ? error.message : 'An unknown error occurred' },
       { status: 500 }
@@ -34,9 +95,17 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const dbContext = AzureSqlDatabaseContext.getInstance();
-  const documentRepository = new DocumentRepository(dbContext);
+  let dbContext;
   try {
+    dbContext = await AzureSqlDatabaseContext.getInstance();
+    const documentRepository = new DocumentRepository(dbContext);
+    const logRepository = new LogRepository(dbContext);
+    const userId = await getUserIdFromToken();
+
+    if (!userId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const category = formData.get('category') as string;
@@ -59,6 +128,16 @@ export async function POST(request: Request) {
       category,
       description,
       filePath: `/uploads/${filename}`,
+      userId,
+    });
+
+    await logRepository.addLogEntry({
+      username: await getUsernameFromToken(), // Use username from token
+      method: 'POST',
+      action: 'Upload Document',
+      result: 'Success',
+      details: `Document ID: ${newDocument.id}, Title: ${newDocument.title}`,
+      ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
     });
 
     return NextResponse.json({ message: 'Document uploaded successfully', document: {
@@ -68,16 +147,26 @@ export async function POST(request: Request) {
     } }, { status: 201 });
   } catch (error) {
     console.error('Error uploading document:', error);
+    if (dbContext) {
+      const logRepository = new LogRepository(dbContext);
+      await logRepository.addLogEntry({
+        username: await getUsernameFromToken(), // Use username from token
+        method: 'POST',
+        action: 'Upload Document',
+        result: 'Failure',
+        details: `Error uploading document. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+      });
+    }
     return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
-import { unlink } from 'fs/promises';
-
 export async function PUT(request: Request) {
-  const dbContext = AzureSqlDatabaseContext.getInstance();
-  const documentRepository = new DocumentRepository(dbContext);
+  let dbContext;
   try {
+    dbContext = await AzureSqlDatabaseContext.getInstance();
+    const documentRepository = new DocumentRepository(dbContext);
     const contentType = request.headers.get('content-type') || '';
     let id, category, description, file, newFileName;
 
@@ -140,16 +229,30 @@ export async function PUT(request: Request) {
     } });
   } catch (error) {
     console.error('Error updating document:', error);
+    if (dbContext) {
+      const logRepository = new LogRepository(dbContext);
+      await logRepository.addLogEntry({
+        username: await getUsernameFromToken(), // Use username from token
+        method: 'PUT',
+        action: 'Update Document',
+        result: 'Failure',
+        details: `Error updating document. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+      });
+    }
     return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
 export async function DELETE(request: Request) {
-  const dbContext = AzureSqlDatabaseContext.getInstance();
-  const documentRepository = new DocumentRepository(dbContext);
+  let dbContext;
+  let id: number | undefined; // Declare id outside try block
   try {
+    dbContext = await AzureSqlDatabaseContext.getInstance();
+    const documentRepository = new DocumentRepository(dbContext);
+    const logRepository = new LogRepository(dbContext);
     const { searchParams } = new URL(request.url);
-    const id = parseInt(searchParams.get('id') as string, 10);
+    id = parseInt(searchParams.get('id') as string, 10);
 
     const existingDocument = await documentRepository.getDocumentById(id);
     if (!existingDocument) {
@@ -167,6 +270,17 @@ export async function DELETE(request: Request) {
 
     const deleted = await documentRepository.deleteDocument(id);
 
+    if (deleted) { // Log only on successful deletion
+      await logRepository.addLogEntry({
+        username: await getUsernameFromToken(), // Use username from token
+        method: 'DELETE',
+        action: 'Delete Document',
+        result: 'Success',
+        details: `Document ID: ${id}, Title: ${existingDocument.title}`,
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown', // Attempt to get IP
+      });
+    }
+
     if (!deleted) {
       return NextResponse.json({ message: 'Failed to delete document' }, { status: 500 });
     }
@@ -174,6 +288,18 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: 'Document deleted successfully' });
   } catch (error) {
     console.error('Error deleting document:', error);
+    if (dbContext) {
+      const logRepository = new LogRepository(dbContext);
+      // Log error
+      await logRepository.addLogEntry({
+        username: await getUsernameFromToken(), // Use username from token
+        method: 'DELETE',
+        action: 'Delete Document',
+        result: 'Failure',
+        details: `Error deleting document ID: ${id}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+      });
+    }
     return NextResponse.json({ message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

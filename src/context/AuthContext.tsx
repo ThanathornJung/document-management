@@ -1,5 +1,6 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import Swal from 'sweetalert2';
 
 export interface User {
   id: number;
@@ -68,7 +69,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    console.log("Attempting to log out user:", user?.username);
+    if (user) {
+      try {
+        const response = await fetch('/api/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username: user.username }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Logout API call failed:', errorData);
+          Swal.fire({
+            title: 'Error!',
+            text: `Logout failed: ${errorData.message}`,
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        } else {
+          console.log("Logout API call successful.");
+        }
+      } catch (error) {
+        console.error('Error during logout fetch:', error);
+        Swal.fire({
+          title: 'Error!',
+          text: `An error occurred during logout: ${error}`,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    }
     setIsLoggedIn(false);
     setUser(null);
     localStorage.removeItem('user');

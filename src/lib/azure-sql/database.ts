@@ -12,29 +12,58 @@ export class AzureSqlDatabaseContext { // Added comment to force reload
   private constructor() { // Make constructor private
   }
 
-  public static getInstance(): AzureSqlDatabaseContext {
+  public static async getInstance(): Promise<AzureSqlDatabaseContext> {
     if (!AzureSqlDatabaseContext.instance) {
       AzureSqlDatabaseContext.instance = new AzureSqlDatabaseContext();
+      await AzureSqlDatabaseContext.instance.initializePool(); // Initialize pool here
     }
     return AzureSqlDatabaseContext.instance;
   }
 
   private async initializePool() {
-    if (!this.pool || !this.pool.connected) {
+    if (this.pool && this.pool.connected) {
+      return;
+    }
+
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
+
+    for (let i = 0; i < maxRetries; i++) {
       try {
         this.pool = await sql.connect(sqlConfig);
         console.log("Azure SQL Connection Pool created.");
-      } catch (err) {
-        console.error("Failed to create Azure SQL Connection Pool:", err);
-        throw err;
+        return; // Success, exit the loop
+      } catch (err: unknown) {
+        console.error(`Attempt ${i + 1} of ${maxRetries}: Failed to create Azure SQL Connection Pool.`);
+        if (typeof err === 'object' && err !== null) {
+          const error = err as { code?: string; originalError?: unknown };
+          if (error.code) {
+            console.error(`Error Code: ${error.code}`);
+          }
+          if (error.originalError) {
+            console.error(`Original Error: ${error.originalError}`);
+          }
+        }
+        console.error(`Full Error: ${err}`);
+
+        if (i < maxRetries - 1) {
+          console.log(`Retrying in ${retryDelay / 1000} seconds...`);
+          await new Promise(res => setTimeout(res, retryDelay));
+        } else {
+          console.error("All connection attempts failed.");
+          throw err; // Throw the last error
+        }
       }
     }
   }
 
   async testConnection(): Promise<boolean> {
+    if (!this.pool) {
+      console.error("Connection pool has not been initialized.");
+      return false;
+    }
     try {
-      await this.initializePool();
-      const request = this.pool!.request();
+      const request = this.pool.request();
       const result = await request.query('SELECT 1 as result');
       console.log("Azure SQL Test Connection Result:", result.recordset[0].result);
       return result.recordset[0].result === 1;
@@ -45,9 +74,11 @@ export class AzureSqlDatabaseContext { // Added comment to force reload
   }
 
   async createTables(): Promise<void> {
+    if (!this.pool) {
+      throw new Error("Connection pool has not been initialized.");
+    }
     try {
-      await this.initializePool();
-      const request = this.pool!.request();
+      const request = this.pool.request();
 
       const createUsersTableSql = `
         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' and xtype='U')
@@ -87,9 +118,11 @@ export class AzureSqlDatabaseContext { // Added comment to force reload
   }
 
   async createLogTable(): Promise<void> {
+    if (!this.pool) {
+      throw new Error("Connection pool has not been initialized.");
+    }
     try {
-      await this.initializePool();
-      const request = this.pool!.request();
+      const request = this.pool.request();
 
       const createLogTableSql = `
         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Logs' and xtype='U')
@@ -113,13 +146,17 @@ export class AzureSqlDatabaseContext { // Added comment to force reload
   }
 
   public async createRequest(): Promise<sql.Request> {
-    await this.initializePool();
-    return this.pool!.request();
+    if (!this.pool) {
+      throw new Error("Connection pool has not been initialized.");
+    }
+    return this.pool.request();
   }
 
   public async executeQuery(query: string): Promise<sql.IResult<unknown>> {
-    await this.initializePool();
-    const request = this.pool!.request();
+    if (!this.pool) {
+      throw new Error("Connection pool has not been initialized.");
+    }
+    const request = this.pool.request();
     return await request.query(query);
   }
 }

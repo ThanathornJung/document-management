@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { AzureSqlDatabaseContext } from '@/lib/azure-sql/database';
 
 export async function GET() {
-  const dbContext = AzureSqlDatabaseContext.getInstance();
   try {
+    const dbContext = await AzureSqlDatabaseContext.getInstance();
     const isConnected = await dbContext.testConnection();
     if (isConnected) {
       return NextResponse.json({ message: 'Azure SQL Database connection successful!' }, { status: 200 });

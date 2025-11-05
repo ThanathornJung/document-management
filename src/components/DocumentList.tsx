@@ -53,7 +53,7 @@ const PreviewIcon = () => (
 );
 
 const GridView = ({ documents, onDeleteClick, onViewClick }: { documents: Document[], onDeleteClick: (id: number) => void, onViewClick: (doc: Document) => void }) => (
-  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     {documents.map((doc) => (
       <div key={doc.id} className="bg-white border border-gray-200 rounded-lg shadow-md flex flex-col transition-all duration-300 hover:shadow-xl">
         {doc.filePath.match(/\.(jpeg|jpg|gif|png)$/) != null && (
@@ -61,35 +61,35 @@ const GridView = ({ documents, onDeleteClick, onViewClick }: { documents: Docume
             <Image src={doc.filePath} alt={doc.title} fill style={{ objectFit: 'cover' }} className="rounded-t-lg" />
           </div>
         )}
-        <div className="p-6 flex-grow">
+        <div className="p-4 flex-grow">
           <div className="flex items-center mb-2">
             <FileIcon filePath={doc.filePath} />
-            <h2 className="text-lg sm:text-xl font-semibold ml-3 text-gray-800 truncate">{doc.title}</h2>
+            <h2 className="text-base font-semibold ml-3 text-gray-800 truncate">{doc.title}</h2>
           </div>
-          <p className="text-gray-600 mb-2"><span className="font-semibold">Category:</span> {doc.category}</p>
-          <p className="text-gray-600 mb-4 line-clamp-3"><span className="font-semibold">Description:</span> {doc.description}</p>
+          <p className="text-sm text-gray-600 mb-2"><span className="font-semibold">Category:</span> {doc.category}</p>
+          <p className="text-sm text-gray-600 mb-4 line-clamp-2"><span className="font-semibold">Description:</span> {doc.description}</p>
         </div>
-        <div className="p-6 pt-0 flex space-x-4">
+        <div className="p-4 pt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <a
             href={doc.filePath}
             download
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-blue-500 text-white text-center py-2 px-4 shadow-lg hover:bg-blue-600 transition-colors rounded-full flex items-center justify-center flex-1"
+            className="bg-blue-500 text-white text-center py-2 px-3 shadow-lg hover:bg-blue-600 transition-colors rounded-full flex items-center justify-center text-sm"
           >
             <DownloadIcon />
             Download
           </a>
           <button
             onClick={() => onDeleteClick(doc.id)}
-            className="bg-red-500 text-white text-center py-2 px-4 shadow-lg hover:bg-red-600 transition-colors rounded-full flex items-center justify-center flex-1"
+            className="bg-red-500 text-white text-center py-2 px-3 shadow-lg hover:bg-red-600 transition-colors rounded-full flex items-center justify-center text-sm"
           >
             <DeleteIcon />
             Delete
           </button>
           <button
             onClick={() => onViewClick(doc)}
-            className="bg-green-500 text-white text-center py-2 px-4 shadow-lg hover:bg-green-600 transition-colors rounded-full flex items-center justify-center flex-1"
+            className="bg-green-500 text-white text-center py-2 px-3 shadow-lg hover:bg-green-600 transition-colors rounded-full flex items-center justify-center text-sm"
           >
             <PreviewIcon />
             View
@@ -102,8 +102,8 @@ const GridView = ({ documents, onDeleteClick, onViewClick }: { documents: Docume
 
 const ListView = ({ documents, onDeleteClick, onViewClick }: { documents: Document[], onDeleteClick: (id: number) => void, onViewClick: (doc: Document) => void }) => (
   <div className="bg-white border border-gray-200 rounded-lg shadow-md overflow-x-auto">
-    <table className="w-full table-auto">
-      <thead className="bg-gray-50">
+    <table className="w-full responsive-table">
+      <thead>
         <tr>
           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File</th>
           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
@@ -111,10 +111,10 @@ const ListView = ({ documents, onDeleteClick, onViewClick }: { documents: Docume
           <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
         </tr>
       </thead>
-      <tbody className="bg-white divide-y divide-gray-200">
+      <tbody className="bg-white divide-y divide-gray-200 md:divide-y-0">
         {documents.map((doc) => (
           <tr key={doc.id} className="hover:bg-gray-50">
-            <td className="px-6 py-4 whitespace-nowrap">
+            <td data-label="File" className="px-6 py-4">
               <div className="flex items-center">
                 <FileIcon filePath={doc.filePath} />
                 <div className="ml-4">
@@ -122,9 +122,9 @@ const ListView = ({ documents, onDeleteClick, onViewClick }: { documents: Docume
                 </div>
               </div>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.category}</td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">{doc.description}</td>
-            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+            <td data-label="Category" className="px-6 py-4 text-sm text-gray-500">{doc.category}</td>
+            <td data-label="Description" className="px-6 py-4 text-sm text-gray-500 truncate max-w-xs">{doc.description}</td>
+            <td data-label="Actions" className="px-6 py-4 text-right text-sm font-medium space-x-4">
               <a href={doc.filePath} download target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900">Download</a>
               <button onClick={() => onDeleteClick(doc.id)} className="text-red-600 hover:text-red-900">Delete</button>
               <button onClick={() => onViewClick(doc)} className="text-green-600 hover:text-green-900">View</button>
